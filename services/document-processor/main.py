@@ -11,6 +11,7 @@ from services.tableau_extractor import TableauExtractor
 from services.document_processor import DocumentProcessor
 from core.config import ServiceConfig
 
+
 app = FastAPI()
 
 # Enable CORS
