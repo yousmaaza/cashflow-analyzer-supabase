@@ -1,91 +1,90 @@
 # Document Processor Service
 
-Ce service est responsable du traitement des relevés bancaires PDF. Il utilise l'OCR et la détection de tableaux pour extraire automatiquement les transactions.
+Service de traitement des documents PDF pour l'extraction des transactions bancaires. Ce service utilise l'OCR (Optical Character Recognition) et la détection de tableaux pour extraire automatiquement les informations des relevés bancaires.
 
 ## Fonctionnalités
 
 - Conversion PDF vers image
 - Détection automatique des tableaux avec YOLO
-- Extraction de texte avec OCR (doctr)
-- API REST pour le traitement des documents
-- Gestion des fichiers temporaires
-- Support GPU (MPS/CUDA) si disponible
+- OCR avec doctr
+- Extraction structurée des transactions
+- API REST avec FastAPI
 
 ## Prérequis
 
 - Python 3.10+
-- Poppler (pour pdf2image)
-- OpenCV
-- GPU (optionnel)
+- Docker et Docker Compose
+- Compte Supabase
+- 2Go de RAM minimum
+- GPU recommandé pour de meilleures performances
 
-### Installation des dépendances système
+## Structure du Service
 
-#### Ubuntu/Debian
-```bash
-apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    poppler-utils
 ```
-
-#### macOS
-```bash
-brew install poppler
-```
-
-#### Windows
-```bash
-# Installer poppler via conda
-conda install -c conda-forge poppler
+document-processor/
+├── services/
+│   ├── document_processor.py    # Logique principale
+│   ├── ocr_extractor.py         # Extraction OCR
+│   └── tableau_extractor.py     # Détection des tableaux
+├── config.py                    # Configuration
+├── main.py                      # Point d'entrée FastAPI
+├── requirements.txt             # Dépendances Python
+└── Dockerfile                   # Configuration Docker
 ```
 
 ## Configuration
 
-1. Créez un fichier `.env` :
-```bash
-cp .env.example .env
-```
+### Variables d'Environnement
 
-2. Configurez les variables d'environnement :
+Créez un fichier `.env` avec :
+
 ```env
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-SUPABASE_JWT_SECRET=your_jwt_secret
+SUPABASE_URL=votre_url_supabase
+SUPABASE_KEY=votre_clé_supabase
+SUPABASE_JWT_SECRET=votre_secret_jwt
 MAX_FILE_SIZE_MB=10
 ```
 
-## Installation locale
+## Installation
 
-1. Créez un environnement virtuel :
+### Développement Local
+
+1. Créer l'environnement virtuel :
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 ```
 
-2. Installez les dépendances :
+2. Installer les dépendances :
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Lancez le service :
+3. Démarrer le service :
 ```bash
-uvicorn main:app --reload --port 8081
+uvicorn main:app --reload --port 8080
 ```
 
-## Déploiement avec Docker
+### Avec Docker
 
-1. Construction de l'image :
+1. Construire l'image :
 ```bash
-docker build -t document-processor:latest .
+docker build -t document-processor .
 ```
 
-2. Lancement du conteneur :
+2. Lancer le conteneur :
 ```bash
-docker run -d \
-    -p 8081:8080 \
-    --env-file .env \
-    --name document-processor \
-    document-processor:latest
+docker run -p 8080:8080 \
+  -e SUPABASE_URL=votre_url \
+  -e SUPABASE_KEY=votre_clé \
+  -e SUPABASE_JWT_SECRET=votre_secret \
+  document-processor
+```
+
+### Avec Docker Compose
+
+```bash
+docker-compose up document-processor
 ```
 
 ## Utilisation de l'API
@@ -93,94 +92,96 @@ docker run -d \
 ### Traiter un PDF
 
 ```bash
-curl -X POST http://localhost:8081/process/ \
-    -H "Content-Type: multipart/form-data" \
-    -F "file=@relevé_bancaire.pdf"
+curl -X POST "http://localhost:8080/process" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@relevé_bancaire.pdf"
 ```
 
-Exemple de réponse :
+Réponse :
 ```json
 {
-    "message": "PDF processed successfully",
-    "transactions": [
-        {
-            "date": "2024-01-15",
-            "description": "PAYMENT XYZ",
-            "amount": 42.50,
-            "type": "DEBIT"
-        }
-    ]
+  "message": "PDF processed successfully",
+  "transactions": [
+    {
+      "date": "2024-01-15",
+      "description": "PAIEMENT CB CARREFOUR",
+      "amount": -42.50,
+      "type": "DEBIT"
+    }
+  ]
 }
 ```
 
-## Structure du Code
+## Déploiement
 
-```
-document-processor/
-├── services/
-│   ├── document_processor.py    # Logique principale
-│   ├── ocr_extractor.py        # Extraction OCR
-│   └── tableau_extractor.py    # Détection des tableaux
-├── main.py                     # Point d'entrée FastAPI
-├── config.py                   # Configuration
-├── requirements.txt            # Dépendances
-└── Dockerfile                  # Configuration Docker
-```
+### Sur un serveur
 
-## Développement
-
-### Tests Locaux
+1. Cloner le repository
 ```bash
-pytest tests/
+git clone <repo_url>
+cd document-processor
 ```
 
-### Logs Docker
+2. Configurer les variables d'environnement
 ```bash
-docker logs -f document-processor
+cp .env.example .env
+# Éditer .env avec vos valeurs
 ```
 
-### Rebuild et Redéploiement
+3. Déployer avec Docker Compose
 ```bash
-docker-compose up -d --build document-processor
+docker-compose up -d
+```
+
+### Sur Supabase Edge Functions
+
+1. Installer Supabase CLI
+```bash
+npm install -g supabase
+```
+
+2. Se connecter à votre projet
+```bash
+supabase login
+```
+
+3. Déployer la fonction
+```bash
+supabase functions deploy document-processor
 ```
 
 ## Monitoring
 
-Le service expose les métriques sur `/metrics` pour Prometheus.
-
-Points de surveillance importants :
-- Utilisation CPU/GPU
-- Temps de traitement PDF
-- Taux de réussite OCR
-- Erreurs d'extraction
+- Logs Docker : `docker logs document-processor`
+- Metrics FastAPI : `http://localhost:8080/metrics`
+- Documentation API : `http://localhost:8080/docs`
 
 ## Dépannage
 
-### Problèmes courants
+### Problèmes Courants
 
-1. Erreur PDF non lisible :
-   - Vérifier les droits d'accès
-   - Vérifier la version de Poppler
-
-2. OCR peu précis :
+1. **Erreur OCR**
    - Vérifier la qualité du PDF
-   - Ajuster les paramètres de tolérance
+   - Augmenter la RAM allouée à Docker
 
-3. Erreurs mémoire :
-   - Ajuster MAX_FILE_SIZE_MB
-   - Vérifier la mémoire disponible
+2. **Timeout lors du traitement**
+   - Augmenter la limite de timeout dans la config
+   - Réduire la taille du PDF
 
-## Support
-
-Pour obtenir de l'aide :
-1. Consultez les logs : `docker logs document-processor`
-2. Vérifiez la documentation API : `/docs`
-3. Ouvrez une issue sur GitHub
+3. **Erreur GPU**
+   - Vérifier l'installation des drivers CUDA
+   - Basculer en mode CPU dans config.py
 
 ## Contribution
 
 1. Fork le projet
-2. Créez votre branche (`git checkout -b feature/amelioration`)
-3. Committez vos changements (`git commit -m 'Ajout amelioration'`)
-4. Push vers la branche (`git push origin feature/amelioration`)
-5. Ouvrez une Pull Request
+2. Créer une branche (`git checkout -b feature/amélioration`)
+3. Commit (`git commit -m 'Ajoute une fonctionnalité'`)
+4. Push (`git push origin feature/amélioration`)
+5. Créer une Pull Request
+
+## Support
+
+- Ouvrir une issue sur GitHub
+- Consulter la documentation Supabase
+- Vérifier les logs Docker
