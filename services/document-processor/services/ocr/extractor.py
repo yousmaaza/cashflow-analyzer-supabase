@@ -1,13 +1,13 @@
 import numpy as np
 from typing import List, Dict, Optional
 from .models import Word, Line, BoundingBox
-from core.config import OCRConfig
+from core.config import ServiceConfig
 from .image_processor import ImageProcessor
 from .word_processor import WordProcessor
 from .line_processor import LineProcessor
 
 class OcrExtractor:
-    def __init__(self, ocr_model, config: Optional[OCRConfig] = None):
+    def __init__(self, ocr_model, config: Optional[ServiceConfig] = None):
         """Initialize OCR Extractor
 
         Args:
@@ -15,14 +15,7 @@ class OcrExtractor:
             config: Configuration object for OCR parameters
         """
         self.ocr_model = ocr_model
-        self.config = config or OCRConfig(
-            x_tolerance=15,
-            debit_x_tolerance=10,
-            y_tolerance=10,
-            min_confidence=0.5,
-            temp_dir="temp",
-            date_formats=["%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"]
-        )
+        self.config = config or ServiceConfig()
         self.word_processor = WordProcessor(self.config)
         self.line_processor = LineProcessor(self.config)
 
@@ -37,10 +30,10 @@ class OcrExtractor:
             List of processed lines with word information
         """
         # Prepare image
-        ImageProcessor.prepare_region(image, box, self.config.temp_path)
+        ImageProcessor.prepare_region(image, box, self.config.ocr.temp_path)
 
         # Extract words
-        doc = ImageProcessor.get_document(self.config.temp_path)
+        doc = ImageProcessor.get_document(self.config.ocr.temp_path)
         result = self.ocr_model(doc)
         
         # Process words
