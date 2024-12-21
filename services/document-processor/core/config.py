@@ -43,11 +43,6 @@ class DocumentConfig:
     def max_file_size(self) -> int:
         return self.max_file_size_mb * 1024 * 1024
 
-@dataclass
-class ValidationConfig:
-    min_transaction_amount: float
-    required_fields: List[str]
-
 class ServiceConfig:
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize service configuration
@@ -90,26 +85,11 @@ class ServiceConfig:
             output_dir=config['document']['output_dir']
         )
 
-        # Initialize Validation configuration
-        self.validation = ValidationConfig(
-            min_transaction_amount=config['validation']['min_transaction_amount'],
-            required_fields=config['validation']['required_fields']
-        )
-
     def validate_file(self, file_path: Path) -> bool:
-        """Validate if a file can be processed
-
-        Args:
-            file_path: Path to the file to validate
-
-        Returns:
-            bool: True if file is valid
-        """
-        # Vérifier le format du fichier
+        """Validate if a file can be processed"""
         if file_path.suffix not in self.document.supported_formats:
             return False
 
-        # Vérifier la taille du fichier
         if file_path.stat().st_size > self.document.max_file_size:
             return False
 
