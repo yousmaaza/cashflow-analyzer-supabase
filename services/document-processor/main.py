@@ -1,76 +1,62 @@
-import os
+import argparse
 from pathlib import Path
-import tempfile
-import shutil
 from doctr.models import ocr_predictor
 import torch
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from services.ocr_extractor import OcrExtractor
-from services.tableau_extractor import TableauExtractor
-from services.document_processor import DocumentProcessor
-from core.config import ServiceConfig
 
+from services.config import ServiceConfig
+from services.ocr.extractor import OcrExtractor
+from services.ocr.image_processor import ImageProcessor
+from services.ocr.line_processor import LineProcessor
+from services.ocr.word_processor import WordProcessor
 
-app = FastAPI()
+def main():
+    parser = argparse.ArgumentParser(description='Process PDF documents and extract transactions')
+    parser.add_argument('pdf_path', type=str, help='Path to the PDF file to process')
+    args = parser.parse_args()
 
-# Enable CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    # Vérifier que le fichier existe
+    pdf_path = Path(args.pdf_path)
+    if not pdf_path.exists():
+        print(f"Error: File {pdf_path} does not exist")
+        return
 
-# Initialisation des composants globaux
-config = ServiceConfig()
-
-class PDFProcessor:
-    def __init__(self):
-        self.model_repo_id = config.tableau.model_repo_id
-        self.model_filename = config.tableau.model_filename
-        device = config.tableau.torch_device
-        self.ocr_model = ocr_predictor(pretrained=True).to(device)
-
-    def process_pdf(self, pdf_path):
-        tableau_extractor = TableauExtractor(config)
-        ocr_extractor = OcrExtractor(self.ocr_model, config)
-
-        processor = DocumentProcessor(
-            tableau_extractor=tableau_extractor,
-            ocr_extractor=ocr_extractor
-        )
-
-        results = processor.process_document(pdf_path)
-        return results
-
-@app.post("/process/")
-async def process_pdf(file: UploadFile = File(...)):
-    if not file.filename.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
-        shutil.copyfileobj(file.file, tmp)
-        pdf_path = Path(tmp.name)
+    if not pdf_path.suffix.lower() == '.pdf':
+        print("Error: File must be a PDF")
+        return
 
     try:
-        processor = PDFProcessor()
-        results = processor.process_pdf(pdf_path)
+        # Initialisation des composants
+        config = ServiceConfig()
+        device = config.tableau.torch_device
+        ocr_model = ocr_predictor(pretrained=True).to(device)
 
-        if results and 'transactions' in results:
-            return {
-                "message": "PDF processed successfully",
-                "transactions": results['transactions']
-            }
+        # Création des processeurs
+        word_processor = WordProcessor()
+        line_processor = LineProcessor()
+        image_processor = ImageProcessor()
+        
+        # Création de l'extracteur OCR
+        ocr_extractor = OcrExtractor(
+            ocr_model=ocr_model,
+            config=config,
+            word_processor=word_processor,
+            line_processor=line_processor,
+            image_processor=image_processor
+        )
 
-        raise HTTPException(status_code=400, detail="No transactions found in PDF")
+        # Traitement du document
+        results = ocr_extractor.process_document(str(pdf_path))
+        
+        if results:
+            print("\nExtracted text blocks:")
+            for idx, block in enumerate(results, 1):
+                print(f"\nBlock {idx}:")
+                print(block)
+        else:
+            print("No text blocks were extracted from the document")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        pdf_path.unlink()  # Supprimer le fichier temporaire
+        print(f"Error processing document: {str(e)}")
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    main()
