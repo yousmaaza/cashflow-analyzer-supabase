@@ -1,0 +1,6 @@
+doctr
+ultralytics
+pdf2image
+fastapi
+python-multipart
+supabase
