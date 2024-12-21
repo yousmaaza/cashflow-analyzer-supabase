@@ -1,6 +1,6 @@
 from typing import List
 from .models import Word, Line
-from .config import OCRConfig
+from core.config import OCRConfig
 
 class LineProcessor:
     def __init__(self, config: OCRConfig):

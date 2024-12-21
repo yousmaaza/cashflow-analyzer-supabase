@@ -9,7 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.ocr_extractor import OcrExtractor
 from services.tableau_extractor import TableauExtractor
 from services.document_processor import DocumentProcessor
-from services.config import ServiceConfig
+from core.config import ServiceConfig
+
 
 app = FastAPI()
 
@@ -33,8 +34,8 @@ class PDFProcessor:
         self.ocr_model = ocr_predictor(pretrained=True).to(device)
 
     def process_pdf(self, pdf_path):
-        tableau_extractor = TableauExtractor(self.model_repo_id, self.model_filename, pdf_path)
-        ocr_extractor = OcrExtractor(self.ocr_model)
+        tableau_extractor = TableauExtractor(config)
+        ocr_extractor = OcrExtractor(self.ocr_model, config)
 
         processor = DocumentProcessor(
             tableau_extractor=tableau_extractor,

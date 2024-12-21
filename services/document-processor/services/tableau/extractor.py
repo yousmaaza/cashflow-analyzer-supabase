@@ -1,20 +1,20 @@
 from pathlib import Path
 import numpy as np
 from typing import List, Optional
-from .config import TableConfig
+from core.config import ServiceConfig
 from .models import TableBox, ProcessedTable
 from .pdf_processor import PDFProcessor
 from .model_handler import ModelHandler
 from .visualizer import TableVisualizer
 
 class TableauExtractor:
-    def __init__(self, config: Optional[TableConfig] = None):
+    def __init__(self, config: Optional[ServiceConfig] = None):
         """Initialize TableauExtractor
 
         Args:
             config: Configuration object for table extraction
         """
-        self.config = config or TableConfig()
+        self.config = config or ServiceConfig()
         self.model_handler = ModelHandler(self.config)
         self.visualizer = TableVisualizer()
 

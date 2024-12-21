@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Optional, Dict
 from .models import Transaction
-from .config import ProcessorConfig
+from core.config import ServiceConfig
 
 class TransactionExtractor:
-    def __init__(self, config: ProcessorConfig):
+    def __init__(self, config: ServiceConfig):
         self.config = config
         
     def extract_transactions(self, lines: List[Dict], page_num: int) -> List[Transaction]:
@@ -29,7 +29,7 @@ class TransactionExtractor:
         """Extract date from line if present"""
         text = ' '.join(word['text'] for word in line['words'])
         
-        for date_format in self.config.date_formats:
+        for date_format in self.config.ocr.date_formats:
             try:
                 return datetime.strptime(text.strip(), date_format).date()
             except ValueError:
@@ -45,3 +45,7 @@ class TransactionExtractor:
             'words': line['words'],
             'current_date': current_date
         })
+    
+    def _is_transaction_line(self, line: Dict) -> bool:
+        # Implémentation simplifiée du test de ligne de transaction
+        return True  # À ajuster selon vos besoins spécifiques

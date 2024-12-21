@@ -1,7 +1,7 @@
 import numpy as np
 from typing import List, Dict, Optional
-from .models import Word, Line
-from .config import OCRConfig
+from .models import Word, Line, BoundingBox
+from core.config import OCRConfig
 from .image_processor import ImageProcessor
 from .word_processor import WordProcessor
 from .line_processor import LineProcessor
@@ -15,7 +15,14 @@ class OcrExtractor:
             config: Configuration object for OCR parameters
         """
         self.ocr_model = ocr_model
-        self.config = config or OCRConfig()
+        self.config = config or OCRConfig(
+            x_tolerance=15,
+            debit_x_tolerance=10,
+            y_tolerance=10,
+            min_confidence=0.5,
+            temp_dir="temp",
+            date_formats=["%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"]
+        )
         self.word_processor = WordProcessor(self.config)
         self.line_processor = LineProcessor(self.config)
 
@@ -30,10 +37,10 @@ class OcrExtractor:
             List of processed lines with word information
         """
         # Prepare image
-        ImageProcessor.prepare_region(image, box, self.config.temp_region_path)
+        ImageProcessor.prepare_region(image, box, self.config.temp_path)
 
         # Extract words
-        doc = ImageProcessor.get_document(self.config.temp_region_path)
+        doc = ImageProcessor.get_document(self.config.temp_path)
         result = self.ocr_model(doc)
         
         # Process words
