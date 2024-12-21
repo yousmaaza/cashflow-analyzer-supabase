@@ -1,12 +1,11 @@
 import time
-from typing import Any, Dict, List
+from typing import Any, List
 from pathlib import Path
 
 from .models import ProcessedDocument, Transaction
 from .config import ProcessorConfig
 from .transaction_extractor import TransactionExtractor
 from .validator import TransactionValidator
-from .categorizer import TransactionCategorizer
 
 class DocumentProcessor:
     def __init__(self, tableau_extractor: Any, ocr_extractor: Any, config: ProcessorConfig = None):
@@ -23,8 +22,7 @@ class DocumentProcessor:
         
         # Initialize components
         self.extractor = TransactionExtractor(self.config)
-        self.validator = TransactionValidator(self.config)
-        self.categorizer = TransactionCategorizer(self.config)
+        self.validator = TransactionValidator()
 
     def process_document(self, pdf_path: Path) -> ProcessedDocument:
         """Process a PDF document to extract transactions
@@ -46,12 +44,11 @@ class DocumentProcessor:
                 page_transactions = self.process_page(image, idx)
                 transactions.extend(page_transactions)
 
-            # Post-process transactions
+            # Validate transactions
             valid_transactions = self.validator.validate_transactions(transactions)
-            categorized_transactions = self.categorizer.categorize_transactions(valid_transactions)
 
             return ProcessedDocument(
-                transactions=categorized_transactions,
+                transactions=valid_transactions,
                 page_count=len(images),
                 filename=pdf_path.name,
                 processing_time=time.time() - start_time
