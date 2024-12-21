@@ -1,9 +1,9 @@
 from typing import List
 from .models import Word, Line
-from core.config import OCRConfig
+from core.config import ServiceConfig
 
 class LineProcessor:
-    def __init__(self, config: OCRConfig):
+    def __init__(self, config: ServiceConfig):
         self.config = config
 
     def process_lines(self, words: List[Word]) -> List[Line]:
@@ -17,7 +17,7 @@ class LineProcessor:
         current_y = sorted_words[0].y_center
 
         for word in sorted_words[1:]:
-            if abs(word.y_center - current_y) <= self.config.y_tolerance:
+            if abs(word.y_center - current_y) <= self.config.ocr.y_tolerance:
                 current_line.append(word)
             else:
                 line = self._create_line(current_line)
