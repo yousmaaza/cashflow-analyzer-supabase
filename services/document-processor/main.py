@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from services.ocr_extractor import OcrExtractor
 from services.tableau_extractor import TableauExtractor
 from services.document_processor import DocumentProcessor
-from config import Config
+from services.config import ServiceConfig
 
 app = FastAPI()
 
@@ -23,13 +23,13 @@ app.add_middleware(
 )
 
 # Initialisation des composants globaux
-config = Config()
+config = ServiceConfig()
 
 class PDFProcessor:
     def __init__(self):
-        self.model_repo_id = "keremberke/yolov8m-table-extraction"
-        self.model_filename = "best.pt"
-        device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+        self.model_repo_id = config.tableau.model_repo_id
+        self.model_filename = config.tableau.model_filename
+        device = config.tableau.torch_device
         self.ocr_model = ocr_predictor(pretrained=True).to(device)
 
     def process_pdf(self, pdf_path):
