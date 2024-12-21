@@ -1,66 +1,30 @@
+from typing import List, Any
 from pathlib import Path
 import numpy as np
-from typing import List, Optional
-from .config import TableConfig
-from .models import TableBox, ProcessedTable
-from .pdf_processor import PDFProcessor
-from .model_handler import ModelHandler
-from .visualizer import TableVisualizer
+from ultralytics import YOLO
+from huggingface_hub import hf_hub_download
+from ...core.config import ServiceConfig
 
 class TableauExtractor:
-    def __init__(self, config: Optional[TableConfig] = None):
-        """Initialize TableauExtractor
+    def __init__(self, config: ServiceConfig):
+        """Initialize Tableau Extractor
 
         Args:
-            config: Configuration object for table extraction
+            config: Service configuration
         """
-        self.config = config or TableConfig()
-        self.model_handler = ModelHandler(self.config)
-        self.visualizer = TableVisualizer()
+        self.config = config.tableau
+        self.model = self._load_model()
 
-    def process_document(self, pdf_path: Path) -> List[List[ProcessedTable]]:
-        """Process entire PDF document
+    def _load_model(self) -> YOLO:
+        """Load and configure YOLO model"""
+        model_path = hf_hub_download(
+            repo_id=self.config.model_repo_id,
+            filename=self.config.model_filename
+        )
+        return YOLO(model_path).to(self.config.torch_device)
 
-        Args:
-            pdf_path: Path to the PDF file
-
-        Returns:
-            List of processed tables per page
-        """
-        images = PDFProcessor.convert_to_images(pdf_path)
-        return [self.process_page(image, page_num) for page_num, image in enumerate(images)]
-
-    def process_page(self, image: np.ndarray, page_num: int) -> List[ProcessedTable]:
-        """Process a single page
-
-        Args:
-            image: Page image
-            page_num: Page number
-
-        Returns:
-            List of processed tables from the page
-        """
-        tables = []
-        detected_boxes = self.model_handler.detect_tables(image)
-
-        for box in detected_boxes:
-            table_image = box.extract_region(image)
-            tables.append(ProcessedTable(
-                image=table_image,
-                coordinates=box,
-                page_number=page_num
-            ))
-
-        return tables
-
-    def visualize_detections(self, image: np.ndarray, boxes: List[TableBox]) -> np.ndarray:
-        """Visualize detected tables
-
-        Args:
-            image: Input image
-            boxes: Detected table boxes
-
-        Returns:
-            Image with visualized detections
-        """
-        return self.visualizer.draw_detections(image, boxes)
+    def detect_tables(self, image: np.ndarray) -> List[List[float]]:
+        """Detect tables in image"""
+        results = self.model(image)
+        boxes = results[0].boxes.xyxy.cpu().numpy()
+        return boxes.tolist()
