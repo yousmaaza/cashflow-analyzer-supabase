@@ -1,1 +1,82 @@
-aW1wb3J0IGFyZ3BhcnNlCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aApmcm9tIGRvY3RyLm1vZGVscyBpbXBvcnQgb2NyX3ByZWRpY3RvcgppbXBvcnQgdG9yY2gKCmZyb20gc2VydmljZXMuY29uZmlnIGltcG9ydCBTZXJ2aWNlQ29uZmlnCmZyb20gc2VydmljZXMub2NyLmV4dHJhY3RvciBpbXBvcnQgT2NyRXh0cmFjdG9yCmZyb20gc2VydmljZXMub2NyLmltYWdlX3Byb2Nlc3NvciBpbXBvcnQgSW1hZ2VQcm9jZXNzb3IKZnJvbSBzZXJ2aWNlcy5vY3IubGluZV9wcm9jZXNzb3IgaW1wb3J0IExpbmVQcm9jZXNzb3IKZnJvbSBzZXJ2aWNlcy5vY3Iud29yZF9wcm9jZXNzb3IgaW1wb3J0IFdvcmRQcm9jZXNzb3IKCmRlZiBtYWluKCk6CiAgICBwYXJzZXIgPSBhcmdwYXJzZS5Bcmd1bWVudFBhcnNlcihkZXNjcmlwdGlvbj0nUHJvY2VzcyBQREYgZG9jdW1lbnRzIGFuZCBleHRyYWN0IHRyYW5zYWN0aW9ucycpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCdwZGZfcGF0aCcsIHR5cGU9c3RyLCBoZWxwPSdQYXRoIHRvIHRoZSBQREYgZmlsZSB0byBwcm9jZXNzJykKICAgIGFyZ3MgPSBwYXJzZXIucGFyc2VfYXJncygpCgogICAgIyBWw6lyaWZpZXIgcXVlIGxlIGZpY2hpZXIgZXhpc3RlCiAgICBwZGZfcGF0aCA9IFBhdGgoYXJncy5wZGZfcGF0aCkKICAgIGlmIG5vdCBwZGZfcGF0aC5leGlzdHMoKToKICAgICAgICBwcmludChmIkVycm9yOiBGaWxlIHtwZGZfcGF0aH0gZG9lcyBub3QgZXhpc3QiKQogICAgICAgIHJldHVybgoKICAgIGlmIG5vdCBwZGZfcGF0aC5zdWZmaXgubG93ZXIoKSA9PSAnLnBkZic6CiAgICAgICAgcHJpbnQoIkVycm9yOiBGaWxlIG11c3QgYmUgYSBQREYiKQogICAgICAgIHJldHVybgoKICAgIHRyeToKICAgICAgICAjIEluaXRpYWxpc2F0aW9uIGRlcyBjb21wb3NhbnRzCiAgICAgICAgY29uZmlnID0gU2VydmljZUNvbmZpZygpCiAgICAgICAgZGV2aWNlID0gY29uZmlnLnRhYmxlYXUudG9yY2hfZGV2aWNlCiAgICAgICAgb2NyX21vZGVsID0gb2NyX3ByZWRpY3RvcihwcmV0cmFpbmVkPVRydWUpLnRvKGRldmljZSkKCiAgICAgICAgIyBDcsOpYXRpb24gZGVzIHByb2Nlc3NldXJzCiAgICAgICAgd29yZF9wcm9jZXNzb3IgPSBXb3JkUHJvY2Vzc29yKCkKICAgICAgICBsaW5lX3Byb2Nlc3NvciA9IExpbmVQcm9jZXNzb3IoKQogICAgICAgIGltYWdlX3Byb2Nlc3NvciA9IEltYWdlUHJvY2Vzc29yKCkKICAgICAgICAKICAgICAgICAjIENyw6lhdGlvbiBkZSBsJ2V4dHJhY3RldXIgT0NSCiAgICAgICAgb2NyX2V4dHJhY3RvciA9IE9jckV4dHJhY3RvcigKICAgICAgICAgICAgb2NyX21vZGVsPW9jcl9tb2RlbCwKICAgICAgICAgICAgY29uZmlnPWNvbmZpZywKICAgICAgICAgICAgd29yZF9wcm9jZXNzb3I9d29yZF9wcm9jZXNzb3IsCiAgICAgICAgICAgIGxpbmVfcHJvY2Vzc29yPWxpbmVfcHJvY2Vzc29yLAogICAgICAgICAgICBpbWFnZV9wcm9jZXNzb3I9aW1hZ2VfcHJvY2Vzc29yCiAgICAgICAgKQoKICAgICAgICAjIFRyYWl0ZW1lbnQgZHUgZG9jdW1lbnQKICAgICAgICByZXN1bHRzID0gb2NyX2V4dHJhY3Rvci5wcm9jZXNzX2RvY3VtZW50KHN0cihwZGZfcGF0aCkpCiAgICAgICAgCiAgICAgICAgaWYgcmVzdWx0czoKICAgICAgICAgICAgcHJpbnQoIlxuRXh0cmFjdGVkIHRleHQgYmxvY2tzOiIpCiAgICAgICAgICAgIGZvciBpZHgsIGJsb2NrIGluIGVudW1lcmF0ZShyZXN1bHRzLCAxKToKICAgICAgICAgICAgICAgIHByaW50KGYiXG5CbG9jayB7aWR4fToiKQogICAgICAgICAgICAgICAgcHJpbnQoYmxvY2spCiAgICAgICAgZWxzZToKICAgICAgICAgICAgcHJpbnQoIk5vIHRleHQgYmxvY2tzIHdlcmUgZXh0cmFjdGVkIGZyb20gdGhlIGRvY3VtZW50IikKCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGU6CiAgICAgICAgcHJpbnQoZiJFcnJvciBwcm9jZXNzaW5nIGRvY3VtZW50OiB7c3RyKGUpfSIpCgppZiBfX25hbWVfXyA9PSAiX19tYWluX18iOgogICAgbWFpbigp
+import os
+from pathlib import Path
+import tempfile
+import shutil
+from doctr.models import ocr_predictor
+import torch
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services.ocr.extractor import OcrExtractor
+from services.tableau.extractor import TableauExtractor
+from services.processor.processor import DocumentProcessor
+from services.config import ServiceConfig
+
+app = FastAPI()
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialisation des composants globaux
+config = ServiceConfig()
+
+class PDFProcessor:
+    def __init__(self):
+        device = config.tableau.torch_device
+        self.ocr_model = ocr_predictor(pretrained=True).to(device)
+
+    def process_pdf(self, pdf_path: Path):
+        tableau_extractor = TableauExtractor(
+            config=config,
+            pdf_path=pdf_path
+        )
+        
+        ocr_extractor = OcrExtractor(
+            ocr_model=self.ocr_model,
+            config=config
+        )
+
+        processor = DocumentProcessor(
+            tableau_extractor=tableau_extractor,
+            ocr_extractor=ocr_extractor,
+            config=config
+        )
+
+        results = processor.process_document(pdf_path)
+        return results
+
+@app.post("/process/")
+async def process_pdf(file: UploadFile = File(...)):
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        pdf_path = Path(tmp.name)
+
+    try:
+        processor = PDFProcessor()
+        results = processor.process_pdf(pdf_path)
+
+        if results and results.transactions:
+            return {
+                "message": "PDF processed successfully",
+                "transactions": [t.dict() for t in results.transactions]
+            }
+
+        raise HTTPException(status_code=400, detail="No transactions found in PDF")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        pdf_path.unlink()  # Supprimer le fichier temporaire
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
