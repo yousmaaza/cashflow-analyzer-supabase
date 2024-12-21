@@ -1,4 +1,4 @@
-doctr
+python-doctr
 ultralytics
 pdf2image
 fastapi
