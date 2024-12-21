@@ -1,0 +1,35 @@
+# Configuration globale du service document-processor
+
+# Configuration OCR
+ocr:
+  x_tolerance: 15
+  debit_x_tolerance: 10
+  y_tolerance: 10
+  min_confidence: 0.5
+  temp_dir: "temp"
+  date_formats:
+    - "%d/%m/%Y"
+    - "%d-%m-%Y"
+    - "%Y-%m-%d"
+
+# Configuration détection de tableaux
+tableau:
+  model:
+    repo_id: "keremberke/yolov8m-table-extraction"
+    filename: "best.pt"
+    device: "auto"  # 'auto', 'cpu', 'cuda', 'mps'
+
+# Configuration du traitement des documents
+document:
+  max_file_size_mb: 10
+  supported_formats:
+    - ".pdf"
+  output_dir: "output"
+
+# Configuration de validation
+validation:
+  min_transaction_amount: 0.01
+  required_fields:
+    - "date"
+    - "description"
+    - "amount"
