@@ -1,6 +1,6 @@
 from typing import List, Optional
 from .models import Word, BoundingBox
-from .config import OCRConfig
+from core.config import OCRConfig
 
 class WordProcessor:
     def __init__(self, config: OCRConfig):
