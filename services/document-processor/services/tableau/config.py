@@ -1,1 +1,0 @@
-# Fichier supprimé et remplacé par la configuration centralisée dans core/config.py
