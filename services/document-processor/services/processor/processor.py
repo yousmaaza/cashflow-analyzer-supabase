@@ -36,20 +36,30 @@ class DocumentProcessor:
         start_time = time.time()
         
         try:
-            # Extract tables from document
-            images = self.tableau_extractor.convert_pdf_to_image()
+            # Process PDF with table extractor
+            document_tables = self.tableau_extractor.process_document(pdf_path)
             transactions = []
 
-            for idx, image in enumerate(images):
-                page_transactions = self.process_page(image, idx)
-                transactions.extend(page_transactions)
+            # Process each page's tables
+            for page_num, page_tables in enumerate(document_tables):
+                for table in page_tables:
+                    # Extract text from each table
+                    box_coordinates = table.coordinates.to_list()
+                    lines = self.ocr_extractor.extract_text_from_region(
+                        table.image, 
+                        box_coordinates
+                    )
+                    
+                    # Extract transactions from text
+                    page_transactions = self.extractor.extract_transactions(lines, page_num)
+                    transactions.extend(page_transactions)
 
             # Validate transactions
             valid_transactions = self.validator.validate_transactions(transactions)
 
             return ProcessedDocument(
                 transactions=valid_transactions,
-                page_count=len(images),
+                page_count=len(document_tables),
                 filename=pdf_path.name,
                 processing_time=time.time() - start_time
             )
@@ -62,27 +72,3 @@ class DocumentProcessor:
                 processing_time=time.time() - start_time,
                 error=str(e)
             )
-
-    def process_page(self, image: Any, page_num: int) -> list[Transaction]:
-        """Process a single page
-
-        Args:
-            image: Page image
-            page_num: Page number
-
-        Returns:
-            List of extracted transactions
-        """
-        # Detect tables
-        table_boxes = self.tableau_extractor.detect_tables(image)
-        page_transactions = []
-
-        for box in table_boxes:
-            # Extract text from table
-            lines = self.ocr_extractor.extract_text_from_region(image, box)
-            
-            # Extract transactions from text
-            transactions = self.extractor.extract_transactions(lines, page_num)
-            page_transactions.extend(transactions)
-
-        return page_transactions
