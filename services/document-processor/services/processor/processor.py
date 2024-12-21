@@ -3,12 +3,12 @@ from typing import Any
 from pathlib import Path
 
 from .models import ProcessedDocument, Transaction
-from .config import ProcessorConfig
+from core.config import ServiceConfig
 from .transaction_extractor import TransactionExtractor
 from .validator import TransactionValidator
 
 class DocumentProcessor:
-    def __init__(self, tableau_extractor: Any, ocr_extractor: Any, config: ProcessorConfig = None):
+    def __init__(self, tableau_extractor: Any, ocr_extractor: Any, config: ServiceConfig = None):
         """Initialize document processor
 
         Args:
@@ -18,7 +18,7 @@ class DocumentProcessor:
         """
         self.tableau_extractor = tableau_extractor
         self.ocr_extractor = ocr_extractor
-        self.config = config or ProcessorConfig()
+        self.config = config or ServiceConfig()
         
         # Initialize components
         self.extractor = TransactionExtractor(self.config)
