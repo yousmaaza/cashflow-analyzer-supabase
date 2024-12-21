@@ -1,5 +1,5 @@
 import time
-from typing import Any, List
+from typing import Any
 from pathlib import Path
 
 from .models import ProcessedDocument, Transaction
@@ -22,7 +22,7 @@ class DocumentProcessor:
         
         # Initialize components
         self.extractor = TransactionExtractor(self.config)
-        self.validator = TransactionValidator()
+        self.validator = TransactionValidator(self.config)
 
     def process_document(self, pdf_path: Path) -> ProcessedDocument:
         """Process a PDF document to extract transactions
@@ -63,7 +63,7 @@ class DocumentProcessor:
                 error=str(e)
             )
 
-    def process_page(self, image: Any, page_num: int) -> List[Transaction]:
+    def process_page(self, image: Any, page_num: int) -> list[Transaction]:
         """Process a single page
 
         Args:

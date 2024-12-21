@@ -8,8 +8,8 @@ class Transaction:
     date: date
     description: str
     amount: Decimal
-    type: str
     raw_text: str = ""
+    confidence: float = 0.0
 
     @classmethod
     def from_line_data(cls, line_data: dict, current_date: Optional[date] = None):
@@ -18,13 +18,12 @@ class Transaction:
             date=current_date or date.today(),
             description=line_data.get('description', ''),
             amount=Decimal(str(line_data.get('amount', 0))),
-            type='DEBIT' if line_data.get('amount', 0) < 0 else 'CREDIT',
             raw_text=' '.join(w['text'] for w in line_data.get('words', []))
         )
 
 @dataclass
 class ProcessedDocument:
-    transactions: List[Transaction]
+    transactions: list[Transaction]
     page_count: int
     filename: str
     processing_time: float

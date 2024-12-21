@@ -1,7 +1,11 @@
 from typing import List
 from .models import Transaction
+from .config import ProcessorConfig
 
 class TransactionValidator:
+    def __init__(self, config: ProcessorConfig):
+        self.config = config
+
     def validate_transactions(self, transactions: List[Transaction]) -> List[Transaction]:
         """Validate and filter transactions"""
         return [t for t in transactions if self._is_valid(t)]
@@ -11,5 +15,5 @@ class TransactionValidator:
         return all([
             transaction.amount != 0,
             transaction.description.strip() != '',
-            isinstance(transaction.date, date)
+            transaction.confidence >= self.config.min_confidence
         ])
