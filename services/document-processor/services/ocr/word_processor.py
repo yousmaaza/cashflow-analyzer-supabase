@@ -1,9 +1,9 @@
 from typing import List, Optional
 from .models import Word, BoundingBox
-from core.config import OCRConfig
+from core.config import ServiceConfig
 
 class WordProcessor:
-    def __init__(self, config: OCRConfig):
+    def __init__(self, config: ServiceConfig):
         self.config = config
 
     def find_debit_column(self, words: List[Word]) -> Optional[float]:
@@ -20,7 +20,7 @@ class WordProcessor:
 
         processed_words = []
         for word in words:
-            if abs(word.bbox.x_center - debit_x) < self.config.debit_x_tolerance:
+            if abs(word.bbox.x_center - debit_x) < self.config.ocr.debit_x_tolerance:
                 try:
                     number = float(word.text.replace(',', '.').replace(' ', ''))
                     word.text = f"-{abs(number)}"
@@ -42,7 +42,7 @@ class WordProcessor:
             last_word = current_group[-1]
             distance = word.bbox.x1 - last_word.bbox.x2
 
-            if distance <= self.config.x_tolerance and word.is_same_type(last_word):
+            if distance <= self.config.ocr.x_tolerance and word.is_same_type(last_word):
                 current_group.append(word)
             else:
                 merged_word = self._merge_word_group(current_group)
