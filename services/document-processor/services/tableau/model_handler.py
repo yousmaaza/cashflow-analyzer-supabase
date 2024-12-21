@@ -4,23 +4,23 @@ from huggingface_hub import hf_hub_download
 import numpy as np
 from typing import List
 from .models import TableBox
-from .config import TableConfig
+from core.config import ServiceConfig
 
 class ModelHandler:
-    def __init__(self, config: TableConfig):
+    def __init__(self, config: ServiceConfig):
         self.config = config
         self.model = self._load_model()
 
     def _load_model(self) -> YOLO:
         """Load and configure YOLO model"""
         model_path = hf_hub_download(
-            repo_id=self.config.model_repo_id,
-            filename=self.config.model_filename
+            repo_id=self.config.tableau.model_repo_id,
+            filename=self.config.tableau.model_filename
         )
         model = YOLO(model_path)
 
         if hasattr(model, 'to'):
-            model = model.to(self.config.device)
+            model = model.to(self.config.tableau.torch_device)
 
         return model
 
