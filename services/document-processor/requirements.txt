@@ -3,4 +3,10 @@ ultralytics
 pdf2image
 fastapi
 python-multipart
-supabase
+supabase-py
+uvicorn
+torch
+opencv-python
+numpy
+pandas
+python-dotenv
