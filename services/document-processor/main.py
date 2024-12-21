@@ -31,10 +31,10 @@ config = ServiceConfig()
 class PDFProcessor:
     def __init__(self):
         # Initialisation du modèle OCR
-        log.logger.info("📦 Initializing PDFProcessor...")
+        log.info("📦 Initializing PDFProcessor...")
         device = config.tableau.torch_device
         self.ocr_model = ocr_predictor(pretrained=True).to(device)
-        log.logger.info(f"✅ OCR model loaded successfully on device: {device}")
+        log.info(f"✅ OCR model loaded successfully on device: {device}")
 
     def process_pdf(self, pdf_path: Path):
         log.log_process_start(pdf_path.name)
@@ -47,7 +47,7 @@ class PDFProcessor:
                 ocr_model=self.ocr_model,
                 config=config
             )
-            log.logger.debug("🔧 Extractors initialized successfully")
+            log.debug("🔧 Extractors initialized successfully")
 
             # Création du processor principal
             processor = DocumentProcessor(
@@ -69,11 +69,11 @@ class PDFProcessor:
 
 @app.post("/process/")
 async def process_pdf(file: UploadFile = File(...)):
-    log.logger.info(f"📝 Received file: {file.filename}")
+    log.info(f"📝 Received file: {file.filename}")
     
     # Validation du type de fichier
     if not file.filename.endswith('.pdf'):
-        log.logger.warning(f"⚠️ Invalid file type: {file.filename}")
+        log.warning(f"⚠️ Invalid file type: {file.filename}")
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
     # Création d'un fichier temporaire
@@ -98,18 +98,18 @@ async def process_pdf(file: UploadFile = File(...)):
             })
             return response_data
 
-        log.logger.warning(f"⚠️ No transactions found in: {file.filename}")
+        log.warning(f"⚠️ No transactions found in: {file.filename}")
         raise HTTPException(status_code=400, detail="No transactions found in PDF")
 
     except Exception as e:
         log.log_error(e, "API endpoint")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500)
     finally:
         # Nettoyage du fichier temporaire
         pdf_path.unlink()
 
 # Pour lancer directement avec python main.py
 if __name__ == "__main__":
-    log.logger.info("🚀 Starting Document Processor Service...")
+    log.info("🚀 Starting Document Processor Service...")
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)

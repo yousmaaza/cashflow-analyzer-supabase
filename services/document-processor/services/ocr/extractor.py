@@ -5,6 +5,7 @@ from core.config import ServiceConfig
 from .image_processor import ImageProcessor
 from .word_processor import WordProcessor
 from .line_processor import LineProcessor
+from core.logger import log
 
 class OcrExtractor:
     def __init__(self, ocr_model, config: Optional[ServiceConfig] = None):
@@ -42,7 +43,10 @@ class OcrExtractor:
         words = self.word_processor.process_debit_amounts(words, debit_x)
         
         # Group into lines
+        log.info(f"🔍 Extracting text from region: {box}")
         lines = self.line_processor.process_lines(words)
+        log.info(f"📝 Extracted {len(lines)} lines of text")
+
         
         return [self._line_to_dict(line) for line in lines]
 

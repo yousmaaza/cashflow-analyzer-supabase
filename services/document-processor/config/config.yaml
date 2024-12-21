@@ -2,8 +2,8 @@
 
 # Configuration OCR
 ocr:
-  x_tolerance: 15
-  debit_x_tolerance: 10
+  x_tolerance: 150
+  debit_x_tolerance: 200
   y_tolerance: 10
   min_confidence: 0.5
   temp_dir: "temp"

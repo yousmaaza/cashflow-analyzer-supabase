@@ -39,9 +39,9 @@ class CustomLogger:
             rotation="10 MB",
             compression="zip",
             retention="30 days",
-            backtrace=True,
-            diagnose=True,
-            enqueue=True,
+            backtrace=False,
+            diagnose=False,
+            enqueue=False,
         )
 
         # Handler pour les erreurs séparé
@@ -52,9 +52,9 @@ class CustomLogger:
             rotation="10 MB",
             compression="zip",
             retention="30 days",
-            backtrace=True,
-            diagnose=True,
-            enqueue=True,
+            backtrace=False,
+            diagnose=False,
+            enqueue=False,
         )
 
     def log_request(self, request_data):
@@ -77,20 +77,35 @@ class CustomLogger:
 
     def log_process_start(self, filename: str):
         logger.info(
-            "\n" + "🚀 "*20 + 
+            "\n" + "🚀 "*3 +
             f"\nStarting processing of: {filename}\n" + 
             "🚀 "*20
         )
 
     def log_process_end(self, filename: str, duration: float):
         logger.info(
-            "\n" + "✨ "*20 + 
+            "\n" + "✨ "*3 +
             f"\nFinished processing {filename} in {duration:.2f} seconds\n" + 
             "✨ "*20
         )
 
     def log_error(self, error: Exception, context: str = ""):
-        logger.exception(f"\n❌ Error in {context}: {str(error)}")
+        logger.exception(f"\n❌ Error : {str(error)}")
+
+    def info(self, message):
+        logger.info(message)
+
+    def debug(self, message):
+        logger.debug(message)
+
+    def warning(self, message):
+        logger.warning(message)
+
+    def error(self, message):
+        logger.error(message)
+
+    def exception(self, message):
+        logger.exception(message)
 
 # Instance globale du logger
 log = CustomLogger()

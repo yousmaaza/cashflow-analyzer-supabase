@@ -6,6 +6,7 @@ from .models import TableBox, ProcessedTable
 from .pdf_processor import PDFProcessor
 from .model_handler import ModelHandler
 from .visualizer import TableVisualizer
+from core.logger import log
 
 class TableauExtractor:
     def __init__(self, config: Optional[ServiceConfig] = None):
@@ -27,8 +28,14 @@ class TableauExtractor:
         Returns:
             List of processed tables per page
         """
+        log.info(f"➡️ Starting table extraction from: {pdf_path}")
         images = PDFProcessor.convert_to_images(pdf_path)
-        return [self.process_page(image, page_num) for page_num, image in enumerate(images)]
+        log.info(f"📄 Converted PDF to {len(images)} images")
+
+        tables = [self.process_page(image, page_num) for page_num, image in enumerate(images)]
+        log.info(f"📊 Found {sum(len(page_tables) for page_tables in tables)} tables in total")
+
+        return tables
 
     def process_page(self, image: np.ndarray, page_num: int) -> List[ProcessedTable]:
         """Process a single page
