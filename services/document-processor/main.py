@@ -6,11 +6,11 @@ from doctr.models import ocr_predictor
 import torch
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from services.ocr_extractor import OcrExtractor
-from services.tableau_extractor import TableauExtractor
-from services.document_processor import DocumentProcessor
-from core.config import ServiceConfig
 
+from services.ocr.extractor import OcrExtractor
+from services.tableau.extractor import TableauExtractor
+from services.processor.processor import DocumentProcessor
+from services.config import ServiceConfig
 
 app = FastAPI()
 
@@ -28,18 +28,24 @@ config = ServiceConfig()
 
 class PDFProcessor:
     def __init__(self):
-        self.model_repo_id = config.tableau.model_repo_id
-        self.model_filename = config.tableau.model_filename
         device = config.tableau.torch_device
         self.ocr_model = ocr_predictor(pretrained=True).to(device)
 
-    def process_pdf(self, pdf_path):
-        tableau_extractor = TableauExtractor(config)
-        ocr_extractor = OcrExtractor(self.ocr_model, config)
+    def process_pdf(self, pdf_path: Path):
+        tableau_extractor = TableauExtractor(
+            config=config,
+            pdf_path=pdf_path
+        )
+        
+        ocr_extractor = OcrExtractor(
+            ocr_model=self.ocr_model,
+            config=config
+        )
 
         processor = DocumentProcessor(
             tableau_extractor=tableau_extractor,
-            ocr_extractor=ocr_extractor
+            ocr_extractor=ocr_extractor,
+            config=config
         )
 
         results = processor.process_document(pdf_path)
@@ -58,10 +64,10 @@ async def process_pdf(file: UploadFile = File(...)):
         processor = PDFProcessor()
         results = processor.process_pdf(pdf_path)
 
-        if results and 'transactions' in results:
+        if results and results.transactions:
             return {
                 "message": "PDF processed successfully",
-                "transactions": results['transactions']
+                "transactions": [t.dict() for t in results.transactions]
             }
 
         raise HTTPException(status_code=400, detail="No transactions found in PDF")
