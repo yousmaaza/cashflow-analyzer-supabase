@@ -79,14 +79,14 @@ class CustomLogger:
         logger.info(
             "\n" + "🚀 "*3 +
             f"\nStarting processing of: {filename}\n" + 
-            "🚀 "*20
+            "🚀 "*3
         )
 
     def log_process_end(self, filename: str, duration: float):
         logger.info(
             "\n" + "✨ "*3 +
             f"\nFinished processing {filename} in {duration:.2f} seconds\n" + 
-            "✨ "*20
+            "✨ "*3
         )
 
     def log_error(self, error: Exception, context: str = ""):

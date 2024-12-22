@@ -33,3 +33,10 @@ validation:
     - "date"
     - "description"
     - "amount"
+
+# output_dir
+output_folders:
+  pages: 'output/pages'
+  tables: 'output/tables'
+  text: 'output/text'
+  transactions: 'output/transactions'

@@ -7,6 +7,7 @@ from core.config import ServiceConfig
 from .transaction_extractor import TransactionExtractor
 from .validator import TransactionValidator
 from core.logger import log
+import pandas as pd
 
 class DocumentProcessor:
     def __init__(self, tableau_extractor: Any, ocr_extractor: Any, config: ServiceConfig = None):
@@ -49,7 +50,8 @@ class DocumentProcessor:
                     box_coordinates = table.coordinates.to_list()
                     lines = self.ocr_extractor.extract_text_from_region(
                         table.image,
-                        box_coordinates
+                        box_coordinates,
+                        table.page_number
                     )
 
                     # Extract transactions from text
@@ -58,6 +60,9 @@ class DocumentProcessor:
 
             # Validate transactions
             valid_transactions = self.validator.validate_transactions(transactions)
+            transactions_df = pd.DataFrame([t.__dict__ for t in valid_transactions])
+            transactions_df.to_csv(f"{self.config.output_folders.transactions}/{pdf_path.stem}_transactions.csv",
+                                   index=False)
 
             log.log_process_end(pdf_path.name, time.time() - start_time)
             return ProcessedDocument(

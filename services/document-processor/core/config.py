@@ -48,6 +48,14 @@ class ValidationConfig:
     min_transaction_amount: float
     required_fields: List[str]
 
+@dataclass
+class OutputFoldersConfig:
+    pages: str
+    tables: str
+    text: str
+    transactions: str
+
+
 class ServiceConfig:
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize service configuration
@@ -96,6 +104,14 @@ class ServiceConfig:
             required_fields=config['validation']['required_fields']
         )
 
+        # Initialize Output Folders configuration
+        self.output_folders = OutputFoldersConfig(
+            pages=config['output_folders']['pages'],
+            tables=config['output_folders']['tables'],
+            text=config['output_folders']['text'],
+            transactions=config['output_folders']['transactions']
+        )
+
     def validate_file(self, file_path: Path) -> bool:
         """Validate if a file can be processed
 
@@ -119,6 +135,10 @@ class ServiceConfig:
         """Create necessary directories"""
         Path(self.ocr.temp_dir).mkdir(parents=True, exist_ok=True)
         Path(self.document.output_dir).mkdir(parents=True, exist_ok=True)
+        Path(self.output_folders.pages).mkdir(parents=True, exist_ok=True)
+        Path(self.output_folders.tables).mkdir(parents=True, exist_ok=True)
+        Path(self.output_folders.text).mkdir(parents=True, exist_ok=True)
+        Path(self.output_folders.transactions).mkdir(parents=True, exist_ok=True)
 
     def cleanup(self) -> None:
         """Cleanup temporary files"""

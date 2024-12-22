@@ -11,7 +11,7 @@ from time import time
 from services.ocr.extractor import OcrExtractor
 from services.tableau.extractor import TableauExtractor
 from services.processor.processor import DocumentProcessor
-from services.config import ServiceConfig
+from core.config import ServiceConfig
 from core.logger import log
 
 app = FastAPI()
@@ -102,7 +102,7 @@ async def process_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="No transactions found in PDF")
 
     except Exception as e:
-        log.log_error(e, "API endpoint")
+        # log.log_error(e, "API endpoint")
         raise HTTPException(status_code=500)
     finally:
         # Nettoyage du fichier temporaire

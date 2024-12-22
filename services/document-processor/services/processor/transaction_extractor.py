@@ -1,51 +1,113 @@
-from datetime import datetime
-from typing import List, Optional, Dict
-from .models import Transaction
+import re
+from datetime import datetime, date
+from decimal import Decimal
+from typing import List, Dict, Optional
+import pandas as pd
+
 from core.config import ServiceConfig
+from core.logger import log
+from .models import Transaction
+
 
 class TransactionExtractor:
     def __init__(self, config: ServiceConfig):
+        """Initialize TransactionExtractor
+
+        Args:
+            config: Service configuration object
+        """
         self.config = config
-        
+
     def extract_transactions(self, lines: List[Dict], page_num: int) -> List[Transaction]:
-        """Extract transactions from OCR lines"""
+        """Extract transactions from OCR lines
+
+        Args:
+            lines: List of OCR processed lines
+            page_num: Page number of the document
+
+        Returns:
+            List of extracted transactions
+        """
         transactions = []
-        current_date = None
+        filename = f"page_{page_num + 1}"
+
+        # Expression régulière modifiée pour détecter une date au début de la ligne
+        # Accepte 1-31 pour le jour et 1-12 pour le mois
+        date_pattern = r'^(\d{1,2})\.(\d{1,2})'
 
         for line in lines:
-            # Vérifier si la ligne contient une date
-            potential_date = self._extract_date(line)
-            if potential_date:
-                current_date = potential_date
+            # Récupérer le texte de la ligne en joignant les mots
+            line_text = ' '.join(word['text'] for word in line['words'])
 
-            # Extraire la transaction si la ligne en contient une
-            transaction = self._extract_transaction(line, current_date)
-            if transaction:
-                transactions.append(transaction)
+            # Vérifier si la ligne commence par une date
+            match = re.match(date_pattern, line_text)
+            if match:
+                try:
+                    # Extraire la date
+                    day, month = match.groups()
+                    # Ajouter les zéros si nécessaire
+                    day = day.zfill(2)
+                    month = month.zfill(2)
+                    current_year = datetime.now().year
+                    transaction_date = datetime.strptime(f"{day}.{month}.{current_year}", "%d.%m.%Y").date()
+
+                    # Extraire le montant (dernier mot de la ligne)
+                    amount_str = line['words'][-1]['text'].replace(',', '.')
+                    try:
+                        amount = float(amount_str)
+                    except ValueError:
+                        continue
+
+                    # Extraire le libellé (tout ce qui est entre la date et le montant)
+                    libelle = ' '.join(word['text'] for word in line['words'][1:-1])
+
+                    # Créer la transaction
+                    transaction = Transaction(
+                        date=transaction_date,
+                        description=libelle,
+                        amount=amount,
+                        raw_text=' '.join(word['text'] for word in line['words'])
+                    )
+
+                    transactions.append(transaction)
+
+                    log.info(f"Transaction trouvée: Date={transaction_date.strftime('%d.%m.%Y')}, "
+                             f"Libellé={libelle}, Montant={amount}")
+
+                except (ValueError, IndexError) as e:
+                    # log.error(f"Erreur lors du parsing de la ligne: {line_text}")
+                    continue
 
         return transactions
 
-    def _extract_date(self, line: Dict) -> Optional[datetime]:
-        """Extract date from line if present"""
-        text = ' '.join(word['text'] for word in line['words'])
-        
-        for date_format in self.config.ocr.date_formats:
-            try:
-                return datetime.strptime(text.strip(), date_format).date()
-            except ValueError:
-                continue
-        return None
 
-    def _extract_transaction(self, line: Dict, current_date: datetime) -> Optional[Transaction]:
-        """Extract transaction from line if it contains one"""
-        if not self._is_transaction_line(line):
-            return None
-            
-        return Transaction.from_line_data({
-            'words': line['words'],
-            'current_date': current_date
-        })
-    
-    def _is_transaction_line(self, line: Dict) -> bool:
-        # Implémentation simplifiée du test de ligne de transaction
-        return True  # À ajuster selon vos besoins spécifiques
+
+    def to_dataframe(self, transactions: List[Transaction]) -> pd.DataFrame:
+        """Convert transactions to pandas DataFrame
+
+        Args:
+            transactions: List of Transaction objects
+
+        Returns:
+            DataFrame with transaction data
+        """
+        if not transactions:
+            return pd.DataFrame()
+
+        # Convertir les transactions en dictionnaires
+        transaction_dicts = [
+            {
+                'date': t.date,
+                'description': t.description,
+                'amount': float(t.amount),
+                'raw_text': t.raw_text
+            } for t in transactions
+        ]
+
+        # Créer le DataFrame
+        df = pd.DataFrame(transaction_dicts)
+
+        # Formater les colonnes si nécessaire
+        df['amount'] = df['amount'].astype(float)
+
+        return df
