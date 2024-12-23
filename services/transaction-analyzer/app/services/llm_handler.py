@@ -29,46 +29,46 @@ class LLMHandler:
 
     def _build_system_prompt(self, transactions: List[Transaction]) -> str:
         """Build system prompt for transaction analysis"""
-        return f"""You are a financial transaction analyzer. Analyze these {len(transactions)} transactions to:
-                1. Identify and categorize each transaction
-                2. Detect recurring patterns and subscriptions
-                3. Group similar transactions
-                4. Extract merchant information
-                
-                For each transaction, provide:
-                1. A suggested category considering the description and amount
-                2. Whether it's a recurring transaction
-                3. A confidence score (0-1)
-                4. Any relevant tags
-                
-                Format your response as a JSON with this structure:
+        return f"""Vous êtes un analyste de transactions financières. Analysez ces {len(transactions)} transactions pour :
+        1. Identifier et catégoriser chaque transaction
+        2. Détecter les modèles récurrents et les abonnements
+        3. Regrouper les transactions similaires
+        4. Extraire les informations sur les commerçants
+        
+        Pour chaque transaction, fournissez :
+        1. Une catégorie suggérée en considérant la description et le montant
+        2. S'il s'agit d'une transaction récurrente
+        3. Un score de confiance (0-1)
+        4. Les étiquettes pertinentes
+        La réponse doit être formatée en JSON. et les valeurs doivent être seuelment en français pas d'anglais. 
+        Formatez votre réponse en JSON avec cette structure :
+        {{
+            "transactions": [
                 {{
-                    "transactions": [
-                        {{
-                            "id": "transaction_id",
-                            "category": "suggested_category",
-                            "subcategory": "specific_type",
-                            "confidence": 0.95,
-                            "explanation": "reason for categorization",
-                            "tags": ["tag1", "tag2"],
-                            "recurrence": {{
-                                "is_recurring": true/false,
-                                "frequency": "monthly/weekly/yearly",
-                                "typical_day": day of the month,
-                                "confidence": 0.9
-                            }}
-                        }}
-                    ],
-                    "patterns": [
-                        {{
-                            "pattern": "pattern description",
-                            "merchant": "merchant name",
-                            "category": "category",
-                            "frequency": "monthly/weekly/yearly",
-                            "confidence": 0.9
-                        }}
-                    ]
-                }}"""
+                    "id": "identifiant_transaction",
+                    "category": "catégorie_suggérée",
+                    "subcategory": "type_spécifique",
+                    "confidence": 0.95,
+                    "explanation": "raison_de_la_catégorisation",
+                    "tags": ["étiquette1", "étiquette2"],
+                    "recurrence": {{
+                        "is_recurring": true/false,
+                        "frequency": "mensuel/hebdomadaire/annuel",
+                        "typical_day": jour_du_mois,
+                        "confidence": 0.9
+                    }}
+                }}
+            ],
+            "patterns": [
+                {{
+                    "pattern": "description_du_modèle",
+                    "merchant": "nom_du_commerçant",
+                    "category": "catégorie",
+                    "frequency": "mensuel/hebdomadaire/annuel",
+                    "confidence": 0.9
+                }}
+            ]
+        }}"""
 
     def _build_transaction_prompt(self, transactions: List[Transaction]) -> str:
         """Format transactions for the prompt"""
