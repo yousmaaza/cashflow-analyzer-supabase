@@ -1,19 +1,11 @@
 from app.models.schemas import (
     Transaction,
-    CategoryPattern,
-    CategorySuggestion,
     CategorizationRequest,
-    CategorizationResult,
-    BatchCategorizationResponse,
-    RecurrenceInfo
+    BatchCategorizationResponse
 )
 
 __all__ = [
     "Transaction",
-    "CategoryPattern",
-    "CategorySuggestion",
     "CategorizationRequest",
-    "CategorizationResult",
-    "BatchCategorizationResponse",
-    "RecurrenceInfo"
+    "BatchCategorizationResponse"
 ]
