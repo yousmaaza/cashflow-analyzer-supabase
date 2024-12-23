@@ -1,0 +1,37 @@
+# Configuration globale du service Transaction Analyzer
+
+# LLM Configuration
+llm:
+  model_name: "llama3"  # Using Llama 3 model
+  context_size: 8192    # Maximum context size for Llama 3
+  max_transactions_batch: 150  # Maximum transactions per batch based on token estimation
+  temperature: 0.2
+  top_p: 0.9
+  options:
+    num_ctx: 8192      # Context window size
+    num_thread: 8      # CPU threads
+    repeat_penalty: 1.1
+
+# Categorization Configuration  
+categorization:
+  min_confidence: 0.6
+  auto_assign_threshold: 0.8
+  cache_duration: 3600  # 1 hour in seconds
+  token_limit_per_transaction: 40  # Estimated tokens per transaction
+
+# API Configuration
+api:
+  batch_timeout: 120  # seconds
+  rate_limit: 100    # requests per minute
+
+# Output Folders
+output_folders:
+  patterns: 'data/patterns'
+  cache: 'data/cache'
+  logs: 'logs'
+
+# Database Configuration
+database:
+  table_name: "transactions"
+  cache_table: "category_cache"
+  patterns_table: "transaction_patterns"
