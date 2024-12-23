@@ -1,0 +1,43 @@
+# Configuration for Transaction Analyzer Service
+
+# LLM Configuration
+llm:
+  model_name: "llama3" # Using Llama 3 via Ollama
+  max_tokens: 8000     # Llama 3 context window
+  temperature: 0.2     # Lower temperature for more consistent categorization
+  model_options:
+    num_ctx: 8000      # Maximum context size for Llama 3
+    num_gpu: 1         # Use GPU if available
+    temperature: 0.2
+    top_p: 0.9
+    repeat_penalty: 1.1
+
+# Categorization Configuration  
+categorization:
+  min_confidence: 0.6
+  auto_assign_threshold: 0.8
+  max_transactions_per_batch: 150  # Based on token estimation
+  token_buffer: 1000  # Reserve tokens for system prompt and response
+
+# Pattern Recognition
+pattern:
+  min_occurrences: 3
+  similarity_threshold: 0.8
+  max_patterns_per_user: 100
+
+# API Configuration
+api:
+  batch_timeout: 60
+  rate_limit: 100  # requests per minute
+
+# Output Folders
+output_folders:
+  cache: 'cache'
+  logs: 'logs'
+  patterns: 'patterns'
+  exports: 'exports'
+
+# Database Configuration
+database:
+  table_name: "transactions"
+  pattern_table: "transaction_patterns"
