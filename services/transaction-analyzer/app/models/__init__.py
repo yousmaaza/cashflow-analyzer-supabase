@@ -1,4 +1,4 @@
-from .schemas import (
+from app.models.schemas import (
     Transaction,
     CategoryPattern,
     CategorySuggestion,

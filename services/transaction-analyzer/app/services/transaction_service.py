@@ -1,66 +1,76 @@
 from typing import List, Optional, Dict
 import time
-from datetime import datetime, date
-from decimal import Decimal
+from datetime import date
 
-from ..core.config import ServiceConfig
-from ..core.logger import log
-from ..models.schemas import (
+from app.core.config import ServiceConfig
+from app.core.logger import log
+from app.models.schemas import (
     Transaction,
     BatchCategorizationResponse,
     CategoryPattern,
     CategorizationRequest
 )
-from .llm_handler import LLMHandler
-
+from app.services.llm_handler import LLMHandler
+import json
 class TransactionService:
     def __init__(self, config: ServiceConfig):
         """Initialize Transaction Analysis Service"""
         self.config = config
         self.llm_handler = LLMHandler(config)
-        
-    async def analyze_transactions(
+
+    def analyze_transactions(
         self,
         request: CategorizationRequest
     ) -> BatchCategorizationResponse:
         """
         Analyze a batch of transactions
-        
+
         Args:
             request: CategorizationRequest containing transactions and user preferences
-            
+
         Returns:
             BatchCategorizationResponse with analyzed transactions
         """
         start_time = time.time()
         log.info(f"Starting transaction analysis for user {request.user_id}")
-        
+
         try:
             # Pre-process transactions
             preprocessed_transactions = self._preprocess_transactions(request.transactions)
-            
+
+            log.info(f"Preprocessed {len(preprocessed_transactions)} transactions")
+
+
+
             # Apply any user preferences/rules
             if request.preferences:
                 self._apply_user_preferences(preprocessed_transactions, request.preferences)
-            
+
             # Get LLM analysis
-            response = await self.llm_handler.analyze_transactions(preprocessed_transactions)
-            
+            log.info("Analyzing transactions with LLM model")
+            response = self.llm_handler.analyze_transactions(preprocessed_transactions)
+            log.info(f"LLM analysis completed")
+
+
+
             # Post-process results
             final_response = self._postprocess_results(response)
-            
+
             # Calculate processing time
             processing_time = time.time() - start_time
             final_response.processing_time = processing_time
-            
+
             log.info(f"""Analysis completed in {processing_time:.2f}s:
                      - Transactions processed: {len(request.transactions)}
                      - New categories found: {len(final_response.new_categories_found)}
                      - Recurring transactions: {len(final_response.recurring_transactions_found)}
                      """)
-            
+
+            final_response_json = final_response.model_dump_json()
+
+
             return final_response
-            
+
         except Exception as e:
             error_msg = f"Error analyzing transactions: {str(e)}"
             log.error(error_msg)
@@ -70,14 +80,14 @@ class TransactionService:
                 patterns=[],
                 error=error_msg
             )
-            
+
     def _preprocess_transactions(
         self,
         transactions: List[Transaction]
     ) -> List[Transaction]:
         """
         Preprocess transactions before analysis
-        
+
         - Normalize descriptions
         - Sort by date
         - Clean data
@@ -95,32 +105,22 @@ class TransactionService:
                 raw_text=transaction.raw_text
             )
             processed.append(processed_tx)
-            
+
         # Sort by date
         return sorted(processed, key=lambda x: x.date)
-        
+
+
     def _normalize_description(self, description: str) -> str:
         """Normalize transaction description"""
         if not description:
             return ""
-            
+
         # Convert to uppercase for consistency
         normalized = description.upper()
-        
-        # Remove common prefixes/suffixes
-        prefixes_to_remove = ['VIR ', 'PRLV ', 'CARTE ']
-        for prefix in prefixes_to_remove:
-            if normalized.startswith(prefix):
-                normalized = normalized[len(prefix):]
-                
         # Remove special characters
         normalized = ''.join(c for c in normalized if c.isalnum() or c.isspace())
-        
-        # Remove multiple spaces
-        normalized = ' '.join(normalized.split())
-        
         return normalized
-        
+
     def _apply_user_preferences(
         self,
         transactions: List[Transaction],
@@ -129,7 +129,7 @@ class TransactionService:
         """Apply user preferences to transactions"""
         if not preferences:
             return
-            
+
         # Apply category overrides
         category_overrides = preferences.get('category_overrides', {})
         for transaction in transactions:
@@ -137,27 +137,27 @@ class TransactionService:
             if normalized_desc in category_overrides:
                 transaction.category = category_overrides[normalized_desc]
                 transaction.confidence_score = 1.0  # User-defined category
-                
+
     def _postprocess_results(
         self,
         response: BatchCategorizationResponse
     ) -> BatchCategorizationResponse:
         """
         Post-process analysis results
-        
+
         - Apply business rules
         - Validate categories
         - Merge similar patterns
         """
         if not response or response.error:
             return response
-            
+
         # Merge similar patterns
         merged_patterns = self._merge_similar_patterns(response.patterns)
-        
+
         # Sort transactions by date
         sorted_transactions = sorted(response.transactions, key=lambda x: x.date)
-        
+
         return BatchCategorizationResponse(
             transactions=sorted_transactions,
             processing_time=response.processing_time,
@@ -165,7 +165,7 @@ class TransactionService:
             new_categories_found=response.new_categories_found,
             recurring_transactions_found=response.recurring_transactions_found
         )
-        
+
     def _merge_similar_patterns(
         self,
         patterns: List[CategoryPattern]
@@ -173,21 +173,21 @@ class TransactionService:
         """Merge similar transaction patterns"""
         if not patterns:
             return []
-            
+
         # Group patterns by merchant
         merchant_patterns = {}
         for pattern in patterns:
             if pattern.merchant not in merchant_patterns:
                 merchant_patterns[pattern.merchant] = []
             merchant_patterns[pattern.merchant].append(pattern)
-            
+
         # Merge patterns for same merchant
         merged_patterns = []
         for merchant, merchant_group in merchant_patterns.items():
             if len(merchant_group) == 1:
                 merged_patterns.append(merchant_group[0])
                 continue
-                
+
             # Merge patterns with high similarity
             merged = merchant_group[0]
             for pattern in merchant_group[1:]:
@@ -198,11 +198,11 @@ class TransactionService:
                     merged.subcategories = list(set(merged.subcategories))
                 else:
                     merged_patterns.append(pattern)
-                    
+
             merged_patterns.append(merged)
-            
+
         return merged_patterns
-        
+
     def _are_patterns_similar(
         self,
         pattern1: CategoryPattern,
@@ -212,25 +212,25 @@ class TransactionService:
         # Same category and frequency
         if pattern1.category != pattern2.category or pattern1.frequency != pattern2.frequency:
             return False
-            
+
         # Similar merchant names
         if self._calculate_similarity(pattern1.merchant, pattern2.merchant) < 0.8:
             return False
-            
+
         return True
-        
+
     def _calculate_similarity(self, str1: str, str2: str) -> float:
         """Calculate similarity between two strings"""
         # Simple implementation - could be improved with more sophisticated algorithms
         str1 = str1.upper()
         str2 = str2.upper()
-        
+
         if str1 == str2:
             return 1.0
-            
+
         # Check if one is substring of other
         if str1 in str2 or str2 in str1:
             return 0.8
-            
+
         # Could add more sophisticated similarity metrics here
         return 0.0

@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 
-from ..core.config import ServiceConfig
-from ..models.schemas import (
+from app.core.config import ServiceConfig
+from app.models.schemas import (
     CategorizationRequest,
     BatchCategorizationResponse
 )
-from ..services.transaction_service import TransactionService
-from ..core.logger import log
+from app.services.transaction_service import TransactionService
+from app.core.logger import log
 
 router = APIRouter(
     prefix="/api/v1/transactions",
@@ -18,7 +18,7 @@ def get_transaction_service():
     return TransactionService(config)
 
 @router.post("/analyze", response_model=BatchCategorizationResponse)
-async def analyze_transactions(
+def analyze_transactions(
     request: CategorizationRequest,
     service: TransactionService = Depends(get_transaction_service)
 ) -> BatchCategorizationResponse:
@@ -39,13 +39,13 @@ async def analyze_transactions(
     """
     try:
         log.info(f"Received analysis request for user {request.user_id} with {len(request.transactions)} transactions")
-        response = await service.analyze_transactions(request)
-        
+        response = service.analyze_transactions(request)
+
         if response.error:
             raise HTTPException(status_code=500, detail=response.error)
-            
+
         return response
-        
+
     except Exception as e:
         log.error(f"Error processing analysis request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
