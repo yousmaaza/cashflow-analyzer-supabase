@@ -2,7 +2,7 @@
 
 # LLM Configuration
 llm:
-  model_name: "llama3"  # Using Llama 3 model
+  model_name: "llama3.2"  # Using Llama 3 model
   context_size: 8192    # Maximum context size for Llama 3
   max_transactions_batch: 150  # Maximum transactions per batch based on token estimation
   temperature: 0.2

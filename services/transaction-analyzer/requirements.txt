@@ -20,12 +20,13 @@ tenacity==8.2.3  # Pour les retries
 pytz==2024.1     # Pour la gestion des dates
 
 # Tests
-pytest==8.0.0
+pytest==7.4.2
 pytest-asyncio==0.23.4
 pytest-cov==4.1.0
-httpx==0.26.0    # Pour les tests d'API
+httpx==0.25.2    # Pour les tests d'API
 
 # Dev tools
 black==24.1.1    # Formatage
 isort==5.13.2    # Organisation des imports
 flake8==7.0.0    # Linting
+pyyaml==6.0       # Pour les workflows GitHub
