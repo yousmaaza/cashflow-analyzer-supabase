@@ -23,10 +23,18 @@ services:
       analyze: "/api/v1/transactions/analyze"
 
 # Configuration Supabase
-database:
-  table_name: "workflows"
+supabase:
+  url: "${SUPABASE_URL}"
+  key: "${SUPABASE_KEY}"
+  jwt_secret: "${SUPABASE_JWT_SECRET}"
+  tables:
+    workflow: "workflows"
+    transaction: "transactions"
   max_connections: 20
   connection_timeout: 10  # seconds
+  options:
+    schema: "public"
+    realtime: false
 
 # Configuration API
 api:
