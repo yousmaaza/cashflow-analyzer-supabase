@@ -1,163 +1,181 @@
 # API Orchestrateur
 
-Ce module contient l'implémentation de l'API REST pour le service d'orchestration des workflows de traitement de documents bancaires.
+API REST pour l'orchestration des workflows de traitement de documents bancaires.
 
-## 📚 Structure
+## ⚙️ Pré-requis
 
-```
-api/
-├── __init__.py
-├── routes.py       # Définition des endpoints
-├── dependencies.py  # Dépendances FastAPI
-└── README.md      # Cette documentation
-```
+### 1. Infrastructure
+- Python 3.10+
+- Docker + Docker Compose
+- Compte Supabase actif
+- Au moins 2Go de RAM disponible
 
-## 🏷️ Endpoints
+### 2. Services dépendants
+- Document Processor (service de traitement des documents)
+- Transaction Analyzer (service d'analyse des transactions)
+- Supabase (stockage et authentification)
 
-### Gestion des Workflows
+### 3. Configuration requise
+```bash
+# Configuration de l'environnement
+cp .env.example .env
 
-#### `POST /api/v1/workflow`
-Crée un nouveau workflow de traitement.
-- Accept: multipart/form-data
-- Body:
-  - document (file): Document bancaire (PDF)
-  - user_id (string): Identifiant utilisateur
-
-#### `GET /api/v1/workflow/{workflow_id}`
-Récupère le statut d'un workflow.
-- Paramètres:
-  - workflow_id: Identifiant du workflow
-
-#### `GET /api/v1/workflows`
-Liste les workflows d'un utilisateur.
-- Query params:
-  - page (int, default=1)
-  - page_size (int, default=10)
-  - state (string, optional)
-
-#### `POST /api/v1/workflow/{workflow_id}/retry`
-Retente un workflow échoué.
-
-### Surveillance
-
-#### `GET /api/v1/health`
-Vérifie l'état du service.
-
-## 🔐 Sécurité
-
-### Authentication
-```python
-from fastapi import Header, HTTPException
-
-async def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != config.api.api_key:
-        raise HTTPException(status_code=403)
+# Remplir les variables suivantes :
+SUPABASE_URL=votre_url_supabase
+SUPABASE_KEY=votre_clé_supabase
+API_KEY=votre_clé_api_secrète
 ```
 
-### Headers Requis
-- X-API-Key: Clé d'API
-- X-User-ID: Identifiant utilisateur
-
-## 🛠 Dépendances
-
-### Services
-```python
-def get_workflow_service():
-    config = ServiceConfig()
-    return WorkflowService(config)
+### 4. Initialisation Supabase
+```bash
+# Exécuter les migrations
+cd migrations/
+supabase db reset
 ```
 
-### Validation
-```python
-async def validate_workflow_access(
-    workflow_id: str,
-    user_id: str
-) -> bool:
-    # Vérifie les droits d'accès
-```
+## 💻 Utilisation pas à pas
 
-## ⚠️ Gestion des Erreurs
+### 1. Préparation du document
+- Format accepté : PDF
+- Taille maximale : 10MB
+- Document lisible et non protégé
 
-### Codes HTTP
-- 200: Succès
-- 400: Erreur de requête
-- 401: Non authentifié
-- 403: Non autorisé
-- 404: Ressource non trouvée
-- 500: Erreur serveur
+### 2. Création d'un workflow
+```bash
+# 1. Envoi du document
+curl -X POST "http://localhost:8000/api/v1/workflow" \
+     -H "X-API-Key: votre_clé_api" \
+     -H "X-User-ID: identifiant_utilisateur" \
+     -F "document=@chemin/vers/relevé.pdf"
 
-### Format d'Erreur
-```json
+# Réponse attendue
 {
-    "error": "Message d'erreur",
-    "detail": "Détails techniques",
-    "workflow_id": "ID optionnel"
+    "workflow_id": "abc-123",
+    "message": "Workflow started successfully",
+    "state": "pending"
 }
 ```
 
-## 💡 Exemples d'Utilisation
-
-### Créer un Workflow
+### 3. Suivi du traitement
 ```bash
-curl -X POST "http://localhost:8000/api/v1/workflow" \
-     -H "X-API-Key: your-key" \
-     -H "X-User-ID: user123" \
-     -F "document=@releve.pdf"
-```
-
-### Vérifier le Statut
-```bash
+# 2. Vérification du statut
 curl "http://localhost:8000/api/v1/workflow/abc-123" \
-     -H "X-API-Key: your-key" \
-     -H "X-User-ID: user123"
+     -H "X-API-Key: votre_clé_api" \
+     -H "X-User-ID: identifiant_utilisateur"
+
+# États possibles
+{
+    "id": "abc-123",
+    "state": "document_processing", # En cours de traitement
+    "progress": 45.5,
+    "message": "Processing document page 2/4"
+}
 ```
 
-## 📊 Monitoring
+### 4. États du workflow
+1. `pending` : En attente de traitement
+2. `document_processing` : Extraction des données
+3. `transaction_analysis` : Catégorisation des transactions
+4. `storage` : Stockage des résultats
+5. `completed` : Terminé avec succès
+6. `failed` : Échec du traitement
 
-### Métriques
-- Latence des requêtes
-- Taux de succès/échec
-- Nombre de workflows actifs
+### 5. Gestion des erreurs
+```bash
+# En cas d'échec, vérifier l'erreur
+curl "http://localhost:8000/api/v1/workflow/abc-123" \
+     -H "X-API-Key: votre_clé_api"
+
+# Réponse en cas d'erreur
+{
+    "id": "abc-123",
+    "state": "failed",
+    "error": "Failed to process document: Invalid format"
+}
+
+# Retry possible
+curl -X POST "http://localhost:8000/api/v1/workflow/abc-123/retry" \
+     -H "X-API-Key: votre_clé_api"
+```
+
+### 6. Récupération des résultats
+```bash
+# Liste des workflows
+curl "http://localhost:8000/api/v1/workflows?page=1&state=completed" \
+     -H "X-API-Key: votre_clé_api" \
+     -H "X-User-ID: identifiant_utilisateur"
+
+# Récupération des transactions
+# Les transactions sont automatiquement stockées dans Supabase
+# Une fois le workflow complété
+```
+
+## 📈 Monitoring
+
+### Vérification de l'état des services
+```bash
+# Health check
+curl "http://localhost:8000/api/v1/health"
+
+# Réponse
+{
+    "healthy": true,
+    "services": {
+        "document_processor": {
+            "status": "healthy",
+            "latency": 42.5
+        },
+        "transaction_analyzer": {
+            "status": "healthy",
+            "latency": 35.2
+        },
+        "database": {
+            "status": "healthy",
+            "connections": 5
+        }
+    }
+}
+```
+
+## 🔧 Troubleshooting
+
+### Problèmes courants
+
+1. **Document non traité**
+   - Vérifier le format du PDF
+   - Confirmer la taille < 10MB
+   - Vérifier les logs du Document Processor
+
+2. **Erreur d'analyse**
+   - Confirmer la qualité du document
+   - Vérifier la connection au Transaction Analyzer
+   - Consulter les logs d'erreur
+
+3. **Problèmes de stockage**
+   - Vérifier la connection Supabase
+   - Confirmer les droits d'accès
+   - Vérifier l'espace disponible
 
 ### Logs
-Chaque endpoint génère des logs structurés:
-```python
-log.info("Creating workflow", extra={
-    "user_id": user_id,
-    "document": document.filename
-})
-```
-
-## 🧪 Tests
-
-Les tests pour l'API se trouvent dans `tests/api/`
-
-### Exécution
 ```bash
-pytest tests/api/
-pytest tests/api/test_routes.py -k "test_create_workflow"
+# Consulter les logs
+tail -f logs/app.log
+
+# Logs d'erreur spécifiques
+tail -f logs/error.log
 ```
 
-### Exemple de Test
-```python
-async def test_create_workflow(client):
-    response = await client.post(
-        "/api/v1/workflow",
-        files={'document': open('test.pdf', 'rb')},
-        headers={'X-User-ID': 'test-user'}
-    )
-    assert response.status_code == 200
-```
+## 📃 Limites et quotas
 
-## 👷 Contribution
+- Taille maximale document : 10MB
+- Rate limit API : 100 requêtes/minute
+- Timeout traitement : 5 minutes
+- Retention logs : 30 jours
+- Maximum retry : 3 tentatives
 
-1. Vérifier la couverture de tests
-2. Suivre les conventions FastAPI
-3. Documenter les nouveaux endpoints
-4. Utiliser les types Pydantic
+## 💬 Support
 
-## 📙 Documentation
-
-La documentation OpenAPI est disponible sur:
-- /docs : Documentation Swagger
-- /redoc : Documentation ReDoc
+1. Vérifier la documentation : /docs
+2. Consulter les logs
+3. Ouvrir une issue sur GitHub
+4. Contacter le support technique
