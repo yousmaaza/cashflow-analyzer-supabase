@@ -1,0 +1,39 @@
+# Configuration globale du service orchestrator
+
+# Configuration Workflow
+workflow:
+  max_retries: 3
+  retry_delay: 5  # seconds
+  timeout: 300  # seconds
+  batch_size: 50  # Maximum number of transactions per batch
+
+# Configuration des services externes
+services:
+  document_processor:
+    url: "http://localhost:8001"
+    timeout: 60  # seconds
+    endpoints:
+      process: "/process"
+      status: "/status"
+  
+  transaction_analyzer:
+    url: "http://localhost:8002"
+    timeout: 30  # seconds
+    endpoints:
+      analyze: "/api/v1/transactions/analyze"
+
+# Configuration Supabase
+database:
+  table_name: "workflows"
+  max_connections: 20
+  connection_timeout: 10  # seconds
+
+# Configuration API
+api:
+  batch_timeout: 120  # seconds
+  rate_limit: 100    # requests per minute
+
+# Configuration des dossiers de sortie
+output_folders:
+  logs: 'logs'
+  temp: 'temp'
