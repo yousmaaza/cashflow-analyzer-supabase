@@ -3,168 +3,137 @@
 ## Description
 CashFlow Analyzer est un système de microservices Python conçu pour analyser automatiquement les relevés bancaires PDF. Le projet utilise Supabase comme backend et est structuré en services indépendants pour une meilleure scalabilité et maintenance.
 
-## Architecture
+[... reste du contenu précédent ...]
 
-### Structure du Projet
+## Utilisation Étape par Étape
+
+### 1. Préparation Initiale
+
+#### 1.1 Préparer votre environnement
+```bash
+# Cloner le repository
+git clone https://github.com/yousmaaza/cashflow-analyzer-supabase.git
+cd cashflow-analyzer-supabase
+
+# Créer un environnement virtuel
+python -m venv .venv
+source .venv/bin/activate  # Sur Windows : .venv\Scripts\activate
 ```
-cashflow-analyzer-supabase/
-├── services/
-│   ├── document-processor/     # Service de traitement des documents
-│   ├── transaction-analyzer/   # Service d'analyse des transactions
-│   └── data-manager/          # Service de gestion des données
-├── supabase/
-│   └── migrations/            # Scripts SQL pour Supabase
-└── tests/                     # Tests unitaires et d'intégration
-```
 
-### Services
-
-#### 1. Document Processor
-- Conversion des PDFs en images
-- Détection des tableaux (YOLO)
-- OCR et extraction de texte (doctr)
-- Structuration des données extraites
-
-#### 2. Transaction Analyzer
-- Analyse des transactions
-- Catégorisation automatique
-- Détection des patterns
-- Génération des statistiques
-
-#### 3. Data Manager
-- Interface avec Supabase
-- CRUD des transactions
-- Gestion du cache
-- API pour les données
-
-## Technologies Utilisées
-
-- **Backend**:
-  - Python 3.10+
-  - Supabase (PostgreSQL)
-  - Docker pour le déploiement
-
-- **OCR et Traitement d'Images**:
-  - doctr
-  - YOLOv8
-  - pdf2image
-  - OpenCV
-
-- **Analyse de Données**:
-  - pandas
-  - numpy
-
-## Configuration
-
-### Prérequis
-- Python 3.10+
-- Docker et Docker Compose
-- Compte Supabase
-
-### Variables d'Environnement
-Créez un fichier `.env` à partir du `.env.example` :
+#### 1.2 Configuration Supabase
+1. Créez un nouveau projet sur [Supabase](https://supabase.com/)
+2. Récupérez votre URL et clé API
+3. Copiez le fichier `.env.example` en `.env`
 ```bash
 cp .env.example .env
 ```
+4. Éditez le fichier `.env` avec vos identifiants Supabase
 
-Variables requises :
-```
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-SUPABASE_JWT_SECRET=your_jwt_secret
-```
+### 2. Installation des Dépendances et Build
 
-### Configuration Supabase
-
-1. Créez un nouveau projet sur Supabase
-
-2. Exécutez les migrations :
+#### 2.1 Installation avec Docker
 ```bash
-cd supabase/migrations
-# Utilisez l'interface Supabase pour exécuter les scripts SQL
-```
-
-## Installation
-
-1. Clonez le repository :
-```bash
-git clone https://github.com/yousmaaza/cashflow-analyzer-supabase.git
-cd cashflow-analyzer-supabase
-```
-
-2. Construisez les images Docker :
-```bash
+# Construire les images Docker
 docker-compose build
+
+# Vérifier les images construites
+docker images
 ```
 
-## Démarrage
-
-Lancez les services avec Docker Compose :
+#### 2.2 Installation manuelle (optionnel)
 ```bash
-docker-compose up -d
+# Installer les dépendances Python
+pip install -r requirements.txt
 ```
 
-Services disponibles :
+### 3. Démarrage des Services
+
+#### 3.1 Démarrage avec Docker
+```bash
+# Lancer tous les services
+docker-compose up -d
+
+# Vérifier les services en cours
+docker-compose ps
+```
+
+#### 3.2 Vérification des Services
 - Document Processor : http://localhost:8081
 - Transaction Analyzer : http://localhost:8082
 - Data Manager : http://localhost:8083
 
-## Développement
+### 4. Processus de Traitement des Documents
 
-### Installation de l'environnement de développement
+#### 4.1 Préparer un Relevé Bancaire
+- Assurez-vous d'avoir un relevé bancaire au format PDF
+- Le PDF doit contenir des transactions lisibles
+
+#### 4.2 Traitement du Document
+1. Utilisez l'endpoint `/process` du Document Processor
+2. Envoyez votre fichier PDF via une requête POST
+3. Le service va :
+   - Convertir le PDF en images
+   - Détecter les tableaux
+   - Extraire les transactions
+   - Retourner un JSON structuré
+
+### 5. Analyse des Transactions
+
+#### 5.1 Catégorisation Automatique
+- Utilisez l'endpoint `/analyze` du Transaction Analyzer
+- Envoyez les transactions extraites
+- L'IA va catégoriser automatiquement chaque transaction
+
+#### 5.2 Visualisation des Données
+- Consultez le Data Manager pour voir les transactions stockées
+- Filtrez, triez et analysez vos transactions
+
+### 6. Personnalisation et Paramétrage
+
+#### 6.1 Configuration Avancée
+- Modifiez `config.yaml` dans chaque service pour ajuster :
+  - Seuils de détection
+  - Configurations LLM
+  - Paramètres de traitement
+
+#### 6.2 Ajout de Nouvelles Fonctionnalités
+- Étendez les services existants
+- Ajoutez de nouveaux modèles d'IA
+- Personnalisez les analyses
+
+### 7. Surveillance et Logs
+
+#### 7.1 Suivi des Logs
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+# Logs d'un service spécifique
+docker-compose logs document-processor
+docker-compose logs transaction-analyzer
 ```
 
-### Tests
+#### 7.2 Débogage
+- Vérifiez les logs pour les erreurs
+- Utilisez les endpoints de healthcheck
+- Consultez la documentation de chaque service
+
+### 8. Mise à Jour et Maintenance
+
+#### 8.1 Mises à Jour
 ```bash
-pytest tests/
+# Mettre à jour les images
+docker-compose pull
+
+# Reconstruire et redémarrer
+docker-compose up -d --build
 ```
 
-### Nouveaux Services
-Pour ajouter un nouveau service :
-1. Créez un nouveau dossier dans `services/`
-2. Ajoutez le Dockerfile et requirements.txt
-3. Mettez à jour docker-compose.yml
-4. Ajoutez les tests dans `tests/`
+#### 8.2 Sauvegarde des Données
+- Utilisez les fonctionnalités de backup de Supabase
+- Exportez régulièrement vos données
 
-## API Reference
+## Conseils Supplémentaires
 
-### Document Processor
-- `POST /process` : Traite un fichier PDF
-  - Body: form-data avec fichier PDF
-  - Returns: JSON avec les transactions extraites
+- Utilisez un PDF de test pour valider l'installation
+- Commencez avec un petit nombre de transactions
+- Ajustez progressivement les configurations
 
-### Transaction Analyzer
-- `POST /analyze` : Analyse des transactions
-  - Body: JSON avec liste de transactions
-  - Returns: JSON avec analyses et catégories
-
-### Data Manager
-- `GET /transactions` : Liste toutes les transactions
-- `POST /transactions` : Crée une nouvelle transaction
-- `PUT /transactions/{id}` : Met à jour une transaction
-- `DELETE /transactions/{id}` : Supprime une transaction
-
-## Sécurité
-- Authentification via Supabase
-- Row Level Security (RLS) pour les données
-- Validation des entrées
-- Rate limiting
-
-## Contribution
-1. Fork le projet
-2. Créez votre branche (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## License
-MIT
-
-## Support
-Pour toute question ou problème :
-1. Ouvrez une issue sur GitHub
-2. Contactez les mainteneurs
+Bon voyage dans l'analyse de vos finances ! 🚀📊
