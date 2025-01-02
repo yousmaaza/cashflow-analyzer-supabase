@@ -16,8 +16,8 @@ class SupabaseClient:
         """
         self.config = config
         self.client: Client = create_client(
-            supabase_url=config.supabase.url,
-            supabase_key=config.supabase.key
+            supabase_url=config.database.url,
+            supabase_key=config.database.key
         )
 
     @retry(

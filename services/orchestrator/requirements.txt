@@ -6,7 +6,7 @@ pydantic==2.5.3
 httpx<0.17.0,>=0.16.1
 
 # Base de données
-supabase-py==0.0.2
+supabase-py
 asyncpg==0.29.0
 
 # Utilitaires
