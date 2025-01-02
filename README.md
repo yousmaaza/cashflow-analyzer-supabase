@@ -1,1 +1,170 @@
-IyBDYXNoRmxvdyBBbmFseXplciAtIFZlcnNpb24gU3VwYWJhc2UKCiMjIERlc2NyaXB0aW9uCkNhc2hGbG93IEFuYWx5emVyIGVzdCB1biBzeXN0w6htZSBkZSBtaWNyb3NlcnZpY2VzIFB5dGhvbiBjb27Dp3UgcG91ciBhbmFseXNlciBhdXRvbWF0aXF1ZW1lbnQgbGVzIHJlbGV2w6lzIGJhbmNhaXJlcyBQREYuIExlIHByb2pldCB1dGlsaXNlIFN1cGFiYXNlIGNvbW1lIGJhY2tlbmQgZXQgZXN0IHN0cnVjdHVyw6kgZW4gc2VydmljZXMgaW5kw6lwZW5kYW50cyBwb3VyIHVuZSBtZWlsbGV1cmUgc2NhbGFiaWxpdMOpIGV0IG1haW50ZW5hbmNlLgoKWy4uLiByZXN0ZSBkdSBjb250ZW51IHByw6ljw6lkZW50IC4uLl0KCiMjIFV0aWxpc2F0aW9uIMOJdGFwZSBwYXIgw4l0YXBlCgojIyMgMS4gUHLDqXBhcmF0aW9uIEluaXRpYWxlCgojIyMjIDEuMSBQcsOpcGFyZXIgdm90cmUgZW52aXJvbm5lbWVudAoqIENsb25lciBsZSByZXBvc2l0b3J5CmBgYGJhc2gKZ2l0IGNsb25lIGh0dHBzOi8vZ2l0aHViLmNvbS95b3VzbWFhemEvY2FzaGZsb3ctYW5hbHl6ZXItc3VwYWJhc2UuZ2l0CmNkIGNhc2hmbG93LWFuYWx5emVyLXN1cGFiYXNlCgojIENyw6hlciB1biBtb2R1bGUgdmlydHVlbApweXRob24gLW0gdmVudiBfdmVudgpzb3VyY2UgLnZlbnQvYmluL2FjdGl2YXRlICAjIFN1ciBXaW5kb3dzIDogX3ZlbnRcU2NyaXB0c1xhY3RpdmF0ZQpgYGAKClIuLi4KCkNlIGNvbnRlbnUgZXN0IHVuIGV4ZW1wbGUgZGUgbGEgc2VjdGlvbiBxdWUgaicgdmV1eCBham91dGVyLCBxdWkgY291dnJlIGRlIG1hbmnDqXJlIGTDqXRhaWxsw6llIGNoYXF1ZSDDqXRhcGUgZCd1dGlsaXNhdGlvbiBkdSBwcm9qZXQgQ2FzaEZsb3cgQW5hbHl6ZXIu
+# CashFlow Analyzer - Version Supabase
+
+## Description
+CashFlow Analyzer est un système de microservices Python conçu pour analyser automatiquement les relevés bancaires PDF. Le projet utilise Supabase comme backend et est structuré en services indépendants pour une meilleure scalabilité et maintenance.
+
+## Architecture
+
+### Structure du Projet
+```
+cashflow-analyzer-supabase/
+├── services/
+│   ├── document-processor/     # Service de traitement des documents
+│   ├── transaction-analyzer/   # Service d'analyse des transactions
+│   └── data-manager/          # Service de gestion des données
+├── supabase/
+│   └── migrations/            # Scripts SQL pour Supabase
+└── tests/                     # Tests unitaires et d'intégration
+```
+
+### Services
+
+#### 1. Document Processor
+- Conversion des PDFs en images
+- Détection des tableaux (YOLO)
+- OCR et extraction de texte (doctr)
+- Structuration des données extraites
+
+#### 2. Transaction Analyzer
+- Analyse des transactions
+- Catégorisation automatique
+- Détection des patterns
+- Génération des statistiques
+
+#### 3. Data Manager
+- Interface avec Supabase
+- CRUD des transactions
+- Gestion du cache
+- API pour les données
+
+## Technologies Utilisées
+
+- **Backend**:
+  - Python 3.10+
+  - Supabase (PostgreSQL)
+  - Docker pour le déploiement
+
+- **OCR et Traitement d'Images**:
+  - doctr
+  - YOLOv8
+  - pdf2image
+  - OpenCV
+
+- **Analyse de Données**:
+  - pandas
+  - numpy
+
+## Configuration
+
+### Prérequis
+- Python 3.10+
+- Docker et Docker Compose
+- Compte Supabase
+
+### Variables d'Environnement
+Créez un fichier `.env` à partir du `.env.example` :
+```bash
+cp .env.example .env
+```
+
+Variables requises :
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+SUPABASE_JWT_SECRET=your_jwt_secret
+```
+
+### Configuration Supabase
+
+1. Créez un nouveau projet sur Supabase
+
+2. Exécutez les migrations :
+```bash
+cd supabase/migrations
+# Utilisez l'interface Supabase pour exécuter les scripts SQL
+```
+
+## Installation
+
+1. Clonez le repository :
+```bash
+git clone https://github.com/yousmaaza/cashflow-analyzer-supabase.git
+cd cashflow-analyzer-supabase
+```
+
+2. Construisez les images Docker :
+```bash
+docker-compose build
+```
+
+## Démarrage
+
+Lancez les services avec Docker Compose :
+```bash
+docker-compose up -d
+```
+
+Services disponibles :
+- Document Processor : http://localhost:8081
+- Transaction Analyzer : http://localhost:8082
+- Data Manager : http://localhost:8083
+
+## Développement
+
+### Installation de l'environnement de développement
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Tests
+```bash
+pytest tests/
+```
+
+### Nouveaux Services
+Pour ajouter un nouveau service :
+1. Créez un nouveau dossier dans `services/`
+2. Ajoutez le Dockerfile et requirements.txt
+3. Mettez à jour docker-compose.yml
+4. Ajoutez les tests dans `tests/`
+
+## API Reference
+
+### Document Processor
+- `POST /process` : Traite un fichier PDF
+  - Body: form-data avec fichier PDF
+  - Returns: JSON avec les transactions extraites
+
+### Transaction Analyzer
+- `POST /analyze` : Analyse des transactions
+  - Body: JSON avec liste de transactions
+  - Returns: JSON avec analyses et catégories
+
+### Data Manager
+- `GET /transactions` : Liste toutes les transactions
+- `POST /transactions` : Crée une nouvelle transaction
+- `PUT /transactions/{id}` : Met à jour une transaction
+- `DELETE /transactions/{id}` : Supprime une transaction
+
+## Sécurité
+- Authentification via Supabase
+- Row Level Security (RLS) pour les données
+- Validation des entrées
+- Rate limiting
+
+## Contribution
+1. Fork le projet
+2. Créez votre branche (`git checkout -b feature/AmazingFeature`)
+3. Commit vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+## License
+MIT
+
+## Support
+Pour toute question ou problème :
+1. Ouvrez une issue sur GitHub
+2. Contactez les mainteneurs.
