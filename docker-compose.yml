@@ -8,6 +8,11 @@ services:
     environment:
       - N8N_HOST=localhost
       - N8N_PORT=5678
+      - CHOWN_FILES=true  # Permet de changer les propriétaires des fichiers
+
+    volumes:
+      - ./data:/files:ro
+    user: "1000:1000"  # Correspond à l'utilisateur du conteneur
     networks:
       - cashflow-network
 

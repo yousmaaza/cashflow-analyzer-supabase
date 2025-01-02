@@ -49,3 +49,4 @@ def analyze_transactions(
     except Exception as e:
         log.error(f"Error processing analysis request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+

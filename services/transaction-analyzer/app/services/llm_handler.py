@@ -85,7 +85,16 @@ class LLMHandler:
             json_end = content.rfind('}') + 1
             json_content = content[json_start:json_end]
 
-            results = json.loads(json_content)
+            try:
+                results = json.loads(json_content)
+            except json.JSONDecodeError as e:
+                log.error(f"JSON decoding error: {e}")
+                return BatchCategorizationResponse(
+                    transactions=transactions,
+                    processing_time=0,
+                    error=f"JSON decoding error: {e}"
+                )
+
             return self._process_llm_results(results, transactions)
 
         except Exception as e:

@@ -1,0 +1,42 @@
+# Test configuration
+
+# Configuration Workflow
+workflow:
+  max_retries: 2
+  retry_delay: 1  # shorter for tests
+  timeout: 30   # shorter for tests
+  batch_size: 10 # smaller for tests
+
+# Configuration des services externes
+services:
+  document_processor:
+    url: "http://test-document-processor:8001"
+    timeout: 5  # shorter for tests
+    endpoints:
+      process: "/process"
+      status: "/status"
+  
+  transaction_analyzer:
+    url: "http://test-transaction-analyzer:8002"
+    timeout: 5  # shorter for tests
+    endpoints:
+      analyze: "/api/v1/transactions/analyze"
+
+# Configuration Supabase - using test credentials
+supabase:
+  url: "http://test-supabase:8000"
+  key: "test-key"
+  jwt_secret: "test-secret"
+  tables:
+    workflow: "test_workflows"
+    transaction: "test_transactions"
+  max_connections: 5
+  connection_timeout: 5
+  options:
+    schema: "public"
+    realtime: false
+
+# Test output folders
+output_folders:
+  logs: 'tests/output/logs'
+  temp: 'tests/output/temp'
