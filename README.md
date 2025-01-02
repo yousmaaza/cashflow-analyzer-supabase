@@ -167,4 +167,4 @@ MIT
 ## Support
 Pour toute question ou problème :
 1. Ouvrez une issue sur GitHub
-2. Contactez les mainteneurs
+2. Contactez les mainteneurs.
