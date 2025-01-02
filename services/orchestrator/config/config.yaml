@@ -1,48 +1,29 @@
-# Configuration globale du service orchestrator
+# Configuration globale du service d'orchestration
 
-# Configuration Workflow
+# Configuration des workflows
 workflow:
   max_retries: 3
-  retry_delay: 5  # seconds
-  timeout: 300  # seconds
-  batch_size: 50  # Maximum number of transactions per batch
+  retry_delay: 60
+  batch_size: 50
+  timeout: 300
 
-# Configuration des services externes
+# Dossiers de sortie
+output_folders:
+  workflows: "output/workflows"
+  logs: "output/logs"
+  temp: "output/temp"
+  cache: "output/cache"
+
+# Configuration des services
 services:
   document_processor:
-    url: "http://localhost:8080"
-    timeout: 60  # seconds
+    url: "http://document-processor:8080"
     endpoints:
       process: "/api/v1/pdf_processor/process"
+      health: "/"
 
-  
   transaction_analyzer:
     url: "http://localhost:8000"
-    timeout: 90  # seconds
     endpoints:
       analyze: "/api/v1/transactions/analyze"
-
-
-# Configuration Supabase
-supabase:
-  url: ""
-  key: ""
-  jwt_secret: ""
-  tables:
-    workflow: "workflows"
-    transaction: "transactions"
-  max_connections: 20
-  connection_timeout: 10  # seconds
-  options:
-    schema: "public"
-    realtime: false
-
-# Configuration API
-api:
-  batch_timeout: 120  # seconds
-  rate_limit: 100    # requests per minute
-
-# Configuration des dossiers de sortie
-output_folders:
-  logs: 'logs'
-  temp: 'temp'
+      health: "/"

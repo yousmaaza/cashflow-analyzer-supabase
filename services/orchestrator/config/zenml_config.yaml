@@ -1,0 +1,8 @@
+pipelines:
+  experiment_name: cashflow_analyzer
+  cache_enabled: true
+  max_cache_size_gb: 5
+  debug_mode: false
+
+tracking:
+  artifact_store_path: '.zenml/artifact_store'

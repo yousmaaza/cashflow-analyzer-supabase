@@ -1,155 +1,173 @@
-# Cashflow Analyzer - Service Orchestrateur
+# Cashflow Workflow Orchestrator
 
-Service d'orchestration pour la gestion des workflows de traitement et d'analyse des transactions bancaires. Ce service coordonne les interactions entre les différents composants du système Cashflow Analyzer.
+## 🏗️ Architecture du Projet
 
-## 🎯 Fonctionnalités
-
-- Orchestration du flux de traitement des documents bancaires 
-- Suivi de l'état des workflows de traitement
-- Coordination entre les services :
-  - Document Processor : Extraction des données des relevés bancaires
-  - Transaction Analyzer : Catégorisation des transactions
-  - Supabase : Stockage persistant des données
-
-## 🔄 Workflow
-
-1. Réception d'un document bancaire
-2. Création et suivi d'un workflow de traitement
-3. Coordination du traitement document → analyse → stockage
-4. Notification de l'état d'avancement
-5. Gestion des erreurs et reprises
+```
+workflow-orchestrator/
+│
+├── app/
+│   ├── __init__.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py          # Points d'entrée API
+│   │
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py          # Configuration du service
+│   │   └── logger.py          # Configuration du logging
+│   │
+│   ├── clients/
+│   │   ├── __init__.py
+│   │   ├── document_processor_client.py
+│   │   └── transaction_analyzer_client.py
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   └── workflow_service.py
+│   │
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── schemas.py
+│   │
+│   └── orchestration/
+│       ├── __init__.py
+│       └── pipeline.py        # Définition des pipelines ZenML
+│
+├── tests/
+│   ├── __init__.py
+│   └── test_workflow.py
+│
+├── config/
+│   ├── zenml_config.yaml
+│   └── service_config.yaml
+│
+├── pyproject.toml             # Configuration Poetry
+├── poetry.lock                # Verrou des dépendances
+└── README.md                  # Documentation du projet
+```
 
 ## 🛠 Prérequis
 
 - Python 3.10+
-- [Document Processor Service](../document-processor)
-- [Transaction Analyzer Service](../transaction-analyzer)
-- Compte Supabase
+- Poetry
+- Docker (optionnel)
 
-## 🚀 Installation
+## 📦 Installation
 
-1. Créer l'environnement virtuel :
+### 1. Cloner le Repository
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+git clone <url-du-repository>
+cd workflow-orchestrator
 ```
 
-2. Installer les dépendances :
+### 2. Installer Poetry
+
 ```bash
-pip install -r requirements.txt
+# Installer Poetry (si ce n'est pas déjà fait)
+pip install poetry
+
+# Configurer Poetry pour créer des environnements virtuels dans le projet
+poetry config virtualenvs.in-project true
 ```
 
-3. Configurer les variables d'environnement :
+### 3. Installer les Dépendances
+
 ```bash
-cp .env.example .env
-# Éditer .env avec vos configurations
+# Installer toutes les dépendances (production et développement)
+poetry install
+
+# Activer l'environnement virtuel
+poetry shell
 ```
 
-4. Démarrer le service :
+## 🚀 Démarrage du Service
+
+### Développement
+
 ```bash
-uvicorn main:app --reload
+# Démarrer le serveur de développement
+poetry run start
 ```
 
-## 📦 Structure
+### Production
 
-```
-orchestrator/
-├── app/
-│   ├── api/          # Routes FastAPI
-│   ├── core/         # Configuration
-│   ├── models/       # Modèles de données
-│   └── services/     # Logique métier
-├── migrations/       # Scripts SQL Supabase
-└── tests/           # Tests unitaires
-```
-
-## 🔧 Configuration
-
-### Variables d'Environnement
-
-```env
-# Service Configuration
-PORT=8000
-ENVIRONMENT=development
-LOG_LEVEL=DEBUG
-
-# Supabase
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
-
-# Services URLs
-DOCUMENT_PROCESSOR_URL=http://localhost:8001
-TRANSACTION_ANALYZER_URL=http://localhost:8002
-```
-
-## 📊 Endpoints API
-
-### POST /workflow/start
-Démarre un nouveau workflow de traitement.
 ```bash
-curl -X POST "http://localhost:8000/workflow/start" \
-     -H "Content-Type: application/json" \
-     -d '{"user_id": "123", "document_path": "path/to/document.pdf"}'
-```
+# Construire l'image Docker
+docker build -t workflow-orchestrator .
 
-### GET /workflow/{workflow_id}
-Récupère l'état d'un workflow.
-```bash
-curl "http://localhost:8000/workflow/abc-123"
+# Exécuter le conteneur
+docker run -p 8000:8000 workflow-orchestrator
 ```
 
 ## 🧪 Tests
 
 ```bash
-# Lancer les tests
-pytest
+# Exécuter tous les tests
+poetry run pytest
 
-# Avec couverture
-pytest --cov=app tests/
+# Tests avec couverture de code
+poetry run pytest --cov=app
 ```
 
-## 🐳 Docker
+## 📝 Utilisation du Workflow
 
-1. Construction de l'image :
+### Configuration
+
+1. Configurer les variables d'environnement dans `.env`
+2. Ajuster `config/zenml_config.yaml`
+
+### Exemple de Code
+
+```python
+from app.core.config import ServiceConfig
+from app.orchestration.pipeline import WorkflowOrchestrator
+
+# Initialisation
+config = ServiceConfig()
+orchestrator = WorkflowOrchestrator(config)
+
+# Exécution du workflow
+result = orchestrator.execute_workflow(
+    user_id="user123", 
+    document_path="/path/to/document.pdf"
+)
+```
+
+## 🛠 Développement
+
+### Outils de Qualité de Code
+
 ```bash
-docker build -t cashflow-orchestrator .
+# Formater le code
+poetry run black .
+
+# Vérifier le style
+poetry run flake8 .
+
+# Organiser les imports
+poetry run isort .
 ```
 
-2. Lancement :
-```bash
-docker-compose up
-```
+## 🔍 Debugging
 
-## 📝 Tables Supabase
-
-### workflows
-Table de suivi des workflows de traitement :
-```sql
-create table workflows (
-  id uuid primary key,
-  user_id text not null,
-  document_path text not null,
-  state text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()),
-  updated_at timestamp with time zone default timezone('utc'::text, now()),
-  error text,
-  results jsonb default '{}'::jsonb
-);
-```
+- Consultez les logs dans `logs/`
+- Utilisez le mode debug dans `config/zenml_config.yaml`
 
 ## 🤝 Contribution
 
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/amelioration`)
-3. Commit (`git commit -m 'Ajoute une fonctionnalité'`)
-4. Push (`git push origin feature/amelioration`)
-5. Créer une Pull Request
+1. Forker le projet
+2. Créer une branche de fonctionnalité
+3. Soumettre une Pull Request
 
-## 📄 License
+### Guidelines
 
-MIT License
+- Suivre les conventions de nommage
+- Ajouter des tests pour les nouvelles fonctionnalités
+- Mettre à jour la documentation
 
-## 🆘 Support
+## 📄 Licence
 
-- Ouvrir une issue sur GitHub
-- Consulter la documentation du projet principal
+[À DÉFINIR]
+```
+

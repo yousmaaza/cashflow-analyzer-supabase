@@ -1,56 +1,68 @@
-from datetime import datetime
-from typing import Dict, List, Optional
 from enum import Enum
+from typing import List, Optional, Dict, Any
+from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
 
+
 class WorkflowState(str, Enum):
+    """États possibles d'un workflow"""
     PENDING = "pending"
-    DOCUMENT_PROCESSING = "document_processing"
-    TRANSACTION_ANALYSIS = "transaction_analysis"
-    STORAGE = "storage"
+    PROCESSING = "processing"
+    ANALYZING = "analyzing"
     COMPLETED = "completed"
     FAILED = "failed"
 
-class DocumentProcessingResult(BaseModel):
-    page_count: int
-    processing_time: float
-    transactions: List[Dict]
-    error: Optional[str] = None
 
-class TransactionAnalysisResult(BaseModel):
-    processing_time: float
-    transactions: List[Dict]
-    error: Optional[str] = None
-
-class WorkflowBase(BaseModel):
-    user_id: str
-    document_path: str
-
-class WorkflowCreate(WorkflowBase):
-    pass
-
-class Workflow(WorkflowBase):
+class Workflow(BaseModel):
+    """
+    Modèle représentant un workflow complet
+    """
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    user_id: str
+    document_path: str
     state: WorkflowState = WorkflowState.PENDING
-    created_at: datetime
-    updated_at: datetime
-    error: Optional[str] = None
-    results: Dict = Field(default_factory=dict)
-    retries: int = 0
-    last_retry_at: Optional[datetime] = None
 
-class WorkflowStatus(BaseModel):
-    id: str
-    state: WorkflowState
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    document_metadata: Optional[Dict[str, Any]] = None
+    analysis_results: Optional[Dict[str, Any]] = None
+
     error: Optional[str] = None
-    progress: Optional[float] = None
+    retries: int = 0
+
+
+class WorkflowRequest(BaseModel):
+    """Requête de création de workflow"""
+    user_id: str
+    document_path: str
+
+
+class WorkflowResponse(BaseModel):
+    """Réponse de création de workflow"""
+    workflow_id: str
+    user_id: str
+    status: str
     message: Optional[str] = None
 
-class WorkflowUpdate(BaseModel):
-    state: Optional[WorkflowState] = None
+
+class WorkflowDetailResponse(BaseModel):
+    """Détails complets d'un workflow"""
+    workflow_id: str
+    user_id: str
+    status: str
+    document_path: str
+    created_at: datetime
+    updated_at: datetime
+    results: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-    results: Optional[Dict] = None
-    retries: Optional[int] = None
-    last_retry_at: Optional[datetime] = None
+
+
+class WorkflowListResponse(BaseModel):
+    """Liste de workflows"""
+    workflows: List[WorkflowResponse]
+    total: int
+    page: int
+    page_size: int
