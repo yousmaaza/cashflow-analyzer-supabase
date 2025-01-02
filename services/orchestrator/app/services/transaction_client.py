@@ -1,3 +1,5 @@
+import time
+
 import httpx
 from typing import Dict, List
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -41,8 +43,10 @@ class TransactionAnalyzerClient:
             
             payload = {
                 "user_id": user_id,
-                "transactions": transactions
+                "transactions": transactions,
+                "preferences": None
             }
+            log.debug(f"Payload: {payload}")
 
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(endpoint, json=payload)
@@ -97,9 +101,9 @@ class TransactionAnalyzerClient:
         """
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                start_time = httpx.get_timer()
+                start_time = time.time()
                 response = await client.get(f"{self.base_url}/")
-                elapsed = httpx.get_timer() - start_time
+                elapsed = time.time() - start_time
 
                 return {
                     "status": "healthy" if response.status_code == 200 else "unhealthy",

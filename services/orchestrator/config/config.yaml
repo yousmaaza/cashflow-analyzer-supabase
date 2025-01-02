@@ -10,23 +10,24 @@ workflow:
 # Configuration des services externes
 services:
   document_processor:
-    url: "http://localhost:8001"
+    url: "http://localhost:8080"
     timeout: 60  # seconds
     endpoints:
-      process: "/process"
-      status: "/status"
+      process: "/api/v1/pdf_processor/process"
+
   
   transaction_analyzer:
-    url: "http://localhost:8002"
-    timeout: 30  # seconds
+    url: "http://localhost:8000"
+    timeout: 90  # seconds
     endpoints:
       analyze: "/api/v1/transactions/analyze"
 
+
 # Configuration Supabase
 supabase:
-  url: "${SUPABASE_URL}"
-  key: "${SUPABASE_KEY}"
-  jwt_secret: "${SUPABASE_JWT_SECRET}"
+  url: ""
+  key: ""
+  jwt_secret: ""
   tables:
     workflow: "workflows"
     transaction: "transactions"

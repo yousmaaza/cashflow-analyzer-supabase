@@ -8,10 +8,10 @@ from app.models.schemas import (
     WorkflowBase,
     WorkflowCreate,
     WorkflowStatus,
-    WorkflowResponse,
-    WorkflowListResponse,
-    ErrorResponse
+
 )
+from app.models.responses import WorkflowResponse, WorkflowListResponse, ErrorResponse
+
 from app.services.workflow_service import WorkflowService
 
 router = APIRouter(prefix="/api/v1")
@@ -22,9 +22,9 @@ def get_workflow_service():
 
 @router.post("/workflow", response_model=WorkflowResponse)
 async def create_workflow(
-    document: UploadFile = File(...),
     user_id: str,
     background_tasks: BackgroundTasks,
+    document: UploadFile = File(...),
     service: WorkflowService = Depends(get_workflow_service)
 ) -> WorkflowResponse:
     """Crée un nouveau workflow de traitement de document"""

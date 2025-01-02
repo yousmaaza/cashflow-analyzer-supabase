@@ -1,3 +1,5 @@
+import time
+
 import httpx
 from typing import Dict, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -69,29 +71,6 @@ class DocumentProcessorClient:
                 error=str(e)
             )
 
-    async def get_status(self, document_id: str) -> Dict:
-        """Get status of document processing
-
-        Args:
-            document_id: ID of the document
-
-        Returns:
-            Dict with status information
-        """
-        endpoint = f"{self.base_url}{self.config.services.document_processor.endpoints.status}"
-        
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                response = await client.get(f"{endpoint}/{document_id}")
-                response.raise_for_status()
-                return response.json()
-
-        except Exception as e:
-            log.error(f"Error getting document status: {str(e)}")
-            return {
-                "status": "error",
-                "error": str(e)
-            }
 
     async def check_health(self) -> Dict:
         """Check health of document processor service
@@ -99,12 +78,14 @@ class DocumentProcessorClient:
         Returns:
             Dict with health status
         """
+
+        endpoint = f"{self.base_url}/"
+
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
-                start_time = httpx.get_timer()
-                response = await client.get(f"{self.base_url}/health")
-                elapsed = httpx.get_timer() - start_time
-                
+                start_time = time.time()
+                response = await client.get(endpoint)
+                elapsed = time.time() - start_time
                 return {
                     "status": "healthy" if response.status_code == 200 else "unhealthy",
                     "latency": elapsed * 1000,  # Convert to milliseconds

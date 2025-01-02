@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional
 import yaml
+import os
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 
 @dataclass
 class WorkflowConfig:
@@ -12,23 +16,26 @@ class WorkflowConfig:
 
 @dataclass
 class ServiceEndpoints:
-    process: str
-    status: str = ""
-    analyze: str = ""
+    process: Optional[str] = None
+    analyze: Optional[str] = None
+    health: str = ""
 
 @dataclass
-class ServiceConfig:
+class IndividualServiceConfig:
     url: str
     timeout: int
     endpoints: ServiceEndpoints
 
 @dataclass
 class ServicesConfig:
-    document_processor: ServiceConfig
-    transaction_analyzer: ServiceConfig
+    document_processor: IndividualServiceConfig
+    transaction_analyzer: IndividualServiceConfig
 
 @dataclass
 class DatabaseConfig:
+    url: str
+    key: str
+    jwt_secret: str
     table_name: str
     max_connections: int
     connection_timeout: int
@@ -57,11 +64,9 @@ class ServiceConfig:
         self._load_config()
 
     def _load_config(self) -> None:
-        """Load configuration from YAML file"""
         with open(self.config_path, 'r') as f:
             config = yaml.safe_load(f)
 
-        # Initialize Workflow configuration
         self.workflow = WorkflowConfig(
             max_retries=config['workflow']['max_retries'],
             retry_delay=config['workflow']['retry_delay'],
@@ -69,39 +74,37 @@ class ServiceConfig:
             batch_size=config['workflow']['batch_size']
         )
 
-        # Initialize Services configuration
         self.services = ServicesConfig(
-            document_processor=ServiceConfig(
-                url=config['services']['document_processor']['url'],
+            document_processor=IndividualServiceConfig(
+                url=os.getenv('DOCUMENT_PROCESSOR_URL', config['services']['document_processor']['url']),
                 timeout=config['services']['document_processor']['timeout'],
                 endpoints=ServiceEndpoints(
                     process=config['services']['document_processor']['endpoints']['process'],
-                    status=config['services']['document_processor']['endpoints']['status']
                 )
             ),
-            transaction_analyzer=ServiceConfig(
-                url=config['services']['transaction_analyzer']['url'],
+            transaction_analyzer=IndividualServiceConfig(
+                url=os.getenv('TRANSACTION_ANALYZER_URL', config['services']['transaction_analyzer']['url']),
                 timeout=config['services']['transaction_analyzer']['timeout'],
                 endpoints=ServiceEndpoints(
-                    analyze=config['services']['transaction_analyzer']['endpoints']['analyze']
+                    analyze=config['services']['transaction_analyzer']['endpoints']['analyze'],
                 )
             )
         )
 
-        # Initialize Database configuration
         self.database = DatabaseConfig(
-            table_name=config['database']['table_name'],
-            max_connections=config['database']['max_connections'],
-            connection_timeout=config['database']['connection_timeout']
+            url=os.getenv('SUPABASE_URL', config['supabase']['url']),
+            key=os.getenv('SUPABASE_KEY', config['supabase']['key']),
+            jwt_secret=os.getenv('SUPABASE_JWT_SECRET', config['supabase']['jwt_secret']),
+            table_name=config['supabase']['tables']['workflow'],
+            max_connections=config['supabase']['max_connections'],
+            connection_timeout=config['supabase']['connection_timeout']
         )
 
-        # Initialize API configuration
         self.api = ApiConfig(
             batch_timeout=config['api']['batch_timeout'],
             rate_limit=config['api']['rate_limit']
         )
 
-        # Initialize Output Folders configuration
         self.output_folders = OutputFoldersConfig(
             logs=config['output_folders']['logs'],
             temp=config['output_folders']['temp']
